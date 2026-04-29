@@ -1,5 +1,5 @@
 import { CheckCircle, CreditCard, HandCoins, PackageCheck, Store, Truck } from "lucide-react";
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { CartSummary } from "../components/cart/CartSummary";
 import { Button } from "../components/ui/button";
@@ -13,13 +13,14 @@ import { formatCurrency } from "../lib/utils";
 import { calculateCartTotals } from "../services/cart";
 import { createOrder } from "../services/orders";
 import { createStripeCheckoutSession } from "../services/payments";
+import { profileToCheckoutDefaults } from "../services/profile";
 import type { CheckoutForm, DeliveryMethod, PaymentMethod } from "../types/order";
 
 const steps = ["Të dhënat e klientit", "Adresa e dërgesës", "Mënyra e pagesës", "Rishiko porosinë"];
 
 export default function Checkout() {
   const { items, clearCart } = useCart();
-  const { user } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const [step, setStep] = useState(0);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [emailSent, setEmailSent] = useState(false);
@@ -38,6 +39,20 @@ export default function Checkout() {
   });
   const totals = useMemo(() => calculateCartTotals(items, form.deliveryMethod), [form.deliveryMethod, items]);
   const monthlyAmount = form.paymentMethod === "monthly" ? totals.total / Number(form.installmentMonths) : 0;
+
+  useEffect(() => {
+    const defaults = profileToCheckoutDefaults(profile, user?.email);
+    setForm((current) => ({
+      ...current,
+      fullName: current.fullName || defaults.fullName || "",
+      phone: current.phone || defaults.phone || "",
+      email: current.email || defaults.email || "",
+      city: current.city || defaults.city || "",
+      address: current.address || defaults.address || "",
+      deliveryNotes: current.deliveryNotes || defaults.deliveryNotes || "",
+      deliveryMethod: defaults.deliveryMethod || current.deliveryMethod || "delivery",
+    }));
+  }, [profile, user?.email]);
 
   if (orderId) {
     return (
@@ -76,12 +91,14 @@ export default function Checkout() {
 
       if (form.paymentMethod === "electronic-full" || form.paymentMethod === "monthly") {
         const checkout = await createStripeCheckoutSession(result.orderId, form.paymentMethod, window.location.origin);
+        if (user?.id) await refreshProfile();
         showToast("Po të dërgojmë te Stripe për pagesë...");
         window.location.assign(checkout.url);
         return;
       }
 
       clearCart();
+      if (user?.id) await refreshProfile();
       setEmailSent(result.emailSent);
       setEstimatedDeliveryDate(result.estimatedDeliveryDate);
       setOrderId(result.orderId);

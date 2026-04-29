@@ -46,17 +46,18 @@ Checkout supports delivery to address, pickup in store, cash payment, Stripe ful
 For Stripe payments:
 
 1. Run `supabase/migrations/002_stripe_payments.sql` in Supabase SQL Editor.
-2. Deploy these Edge Functions:
+2. Run `supabase/migrations/003_profile_checkout_fields.sql` so checkout can save customer name, phone, city, address, notes, and delivery preference for future orders.
+3. Deploy these Edge Functions:
    - `supabase/functions/create-stripe-checkout/index.ts`
    - `supabase/functions/stripe-webhook/index.ts`
-3. Add Stripe secrets only in Supabase:
+4. Add Stripe secrets only in Supabase:
 
 ```bash
 supabase secrets set STRIPE_SECRET_KEY=sk_test_or_live_key
 supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
 ```
 
-4. In Stripe Dashboard, add a webhook endpoint that points to:
+5. In Stripe Dashboard, add a webhook endpoint that points to:
 
 ```text
 https://YOUR_SUPABASE_PROJECT_REF.supabase.co/functions/v1/stripe-webhook
@@ -71,6 +72,12 @@ checkout.session.async_payment_failed
 ```
 
 Do not put `STRIPE_SECRET_KEY` or `STRIPE_WEBHOOK_SECRET` in `.env` or any frontend code.
+
+Order emails use `send-order-confirmation` for three events:
+
+- `placed`: sent immediately after the order is created
+- `paid`: sent by the Stripe webhook after `checkout.session.completed`
+- `shipped`: sent when an admin changes the order status to `shipped`
 
 Add the RapidAPI key only as a Supabase Edge Function secret:
 

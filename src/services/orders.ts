@@ -1,7 +1,8 @@
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
 import type { CartItem } from "../types/cart";
-import type { CheckoutForm } from "../types/order";
+import type { CheckoutForm, OrderStatus } from "../types/order";
 import { calculateCartTotals } from "./cart";
+import { saveCheckoutProfile } from "./profile";
 
 export async function createOrder(form: CheckoutForm, items: CartItem[], userId?: string) {
   const totals = calculateCartTotals(items, form.deliveryMethod);
@@ -23,6 +24,8 @@ export async function createOrder(form: CheckoutForm, items: CartItem[], userId?
       delivery_method: form.deliveryMethod,
       pickup_location: form.deliveryMethod === "pickup" ? "Medium Mobil Shop, Prishtinë" : null,
       payment_method: form.paymentMethod,
+      payment_provider: form.paymentMethod === "cash" ? null : "stripe",
+      payment_status: form.paymentMethod === "cash" ? "unpaid" : "pending",
       installment_months: form.paymentMethod === "monthly" ? Number(form.installmentMonths) : null,
       subtotal: totals.subtotal,
       delivery_cost: totals.deliveryCost,
@@ -34,6 +37,7 @@ export async function createOrder(form: CheckoutForm, items: CartItem[], userId?
     .single();
 
   if (error) return { orderId: null, error };
+  if (userId) await saveCheckoutProfile(userId, form);
 
   const orderItems = items.map((item) => ({
     order_id: data.id,
@@ -46,17 +50,32 @@ export async function createOrder(form: CheckoutForm, items: CartItem[], userId?
     delivery_estimate: item.product.delivery_badge,
   }));
   await supabase.from("order_items").insert(orderItems);
-  const email = await sendOrderConfirmationEmail(data.id as string);
+  const email = await sendOrderConfirmationEmail(data.id as string, "placed");
   return { orderId: data.id as string, estimatedDeliveryDate, emailSent: email.sent, error: null };
 }
 
-export async function sendOrderConfirmationEmail(orderId: string) {
+export async function sendOrderConfirmationEmail(orderId: string, emailType: "placed" | "paid" | "shipped" = "placed") {
   if (!isSupabaseConfigured) return { sent: false, message: "Supabase is not configured." };
   const { data, error } = await supabase.functions.invoke<{ sent: boolean; message: string }>("send-order-confirmation", {
-    body: { orderId },
+    body: { orderId, emailType },
   });
   if (error) return { sent: false, message: error.message };
   return data ?? { sent: false, message: "No email response returned." };
+}
+
+export async function updateOrderStatus(orderId: string, status: OrderStatus) {
+  if (!isSupabaseConfigured) return { error: null, emailSent: false };
+  const { error } = await supabase
+    .from("orders")
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq("id", orderId);
+  if (error) return { error, emailSent: false };
+
+  if (status === "shipped") {
+    const email = await sendOrderConfirmationEmail(orderId, "shipped");
+    return { error: null, emailSent: email.sent };
+  }
+  return { error: null, emailSent: false };
 }
 
 export async function getOrders(userId?: string) {

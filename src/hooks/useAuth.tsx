@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function loadProfile(userId: string) {
     const { data } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
-    setProfile((data as Profile | null) ?? { id: userId, full_name: null, role: "user" });
+    setProfile((data as Profile | null) ?? { id: userId, full_name: null, phone: null, city: null, address: null, delivery_notes: null, preferred_delivery_method: "delivery", role: "user" });
   }
 
   const refreshProfile = async () => {

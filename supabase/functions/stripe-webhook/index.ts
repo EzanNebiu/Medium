@@ -40,6 +40,8 @@ serve(async (req) => {
       if (stripeSecretKey && subscriptionId && installmentMonths > 0) {
         await scheduleSubscriptionCancellation(stripeSecretKey, subscriptionId, installmentMonths);
       }
+      const orderId = getMetadataString(session, "order_id");
+      if (orderId) await sendOrderEmail(supabaseUrl, serviceRoleKey, orderId, "paid");
     }
   }
 
@@ -102,6 +104,24 @@ function getStripeSession(event: ApiObject) {
 function getMetadataNumber(source: ApiObject, key: string) {
   const metadata = isObject(source.metadata) ? source.metadata : null;
   return Number(metadata?.[key] ?? 0);
+}
+
+function getMetadataString(source: ApiObject, key: string) {
+  const metadata = isObject(source.metadata) ? source.metadata : null;
+  const value = metadata?.[key];
+  return typeof value === "string" ? value : "";
+}
+
+async function sendOrderEmail(supabaseUrl: string, serviceRoleKey: string, orderId: string, emailType: "paid" | "shipped" | "placed") {
+  await fetch(`${supabaseUrl}/functions/v1/send-order-confirmation`, {
+    method: "POST",
+    headers: {
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ orderId, emailType }),
+  }).catch(() => null);
 }
 
 async function scheduleSubscriptionCancellation(stripeSecretKey: string, subscriptionId: string, months: number) {

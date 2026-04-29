@@ -17,6 +17,7 @@ type OrderRow = {
   delivery_method: string | null;
   pickup_location: string | null;
   payment_method: string;
+  payment_status: string | null;
   installment_months: number | null;
   status: string;
   subtotal: number;
@@ -26,6 +27,8 @@ type OrderRow = {
   estimated_delivery_date: string | null;
   order_items: OrderItem[];
 };
+
+type EmailType = "placed" | "paid" | "shipped";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -46,12 +49,13 @@ serve(async (req) => {
 
   const body = await req.json().catch(() => ({}));
   const orderId = String(body.orderId ?? "").trim();
+  const emailType = parseEmailType(body.emailType);
   if (!orderId) return json({ sent: false, message: "orderId is required." }, 400);
 
   const supabase = createClient(supabaseUrl, serviceRoleKey);
   const { data, error } = await supabase
     .from("orders")
-    .select("id, customer_name, customer_email, delivery_method, pickup_location, payment_method, installment_months, status, subtotal, delivery_cost, discount, total, estimated_delivery_date, order_items(product_name, quantity, unit_price, total_price, warranty_months, delivery_estimate)")
+    .select("id, customer_name, customer_email, delivery_method, pickup_location, payment_method, payment_status, installment_months, status, subtotal, delivery_cost, discount, total, estimated_delivery_date, order_items(product_name, quantity, unit_price, total_price, warranty_months, delivery_estimate)")
     .eq("id", orderId)
     .maybeSingle();
 
@@ -69,9 +73,9 @@ serve(async (req) => {
     body: JSON.stringify({
       from: emailFrom,
       to: [order.customer_email],
-      subject: `Konfirmimi i porosisë Medium Mobil Shop ${shortId(order.id)}`,
-      html: renderEmail(order),
-      text: renderTextEmail(order),
+      subject: subjectFor(order, emailType),
+      html: renderEmail(order, emailType),
+      text: renderTextEmail(order, emailType),
     }),
   });
 
@@ -80,7 +84,7 @@ serve(async (req) => {
     return json({ sent: false, message: `Email provider error: ${message}` }, 200);
   }
 
-  return json({ sent: true, message: "Order confirmation email sent." });
+  return json({ sent: true, message: `${emailType} email sent.` });
 });
 
 function json(data: unknown, status = 200) {
@@ -108,7 +112,7 @@ function normalizeOrder(order: OrderRow): OrderRow {
   };
 }
 
-function renderEmail(order: OrderRow) {
+function renderEmail(order: OrderRow, emailType: EmailType) {
   const items = order.order_items
     .map((item) => `
       <tr>
@@ -126,11 +130,11 @@ function renderEmail(order: OrderRow) {
       <div style="max-width:680px;margin:auto;background:white;border:1px solid #fed7aa;border-radius:14px;overflow:hidden;">
         <div style="background:#111827;color:white;padding:24px;">
           <h1 style="margin:0;font-size:26px;">Medium <span style="color:#f97316;">Mobil Shop</span></h1>
-          <p style="margin:8px 0 0;">Konfirmimi i porosisë ${shortId(order.id)}</p>
+          <p style="margin:8px 0 0;">${escapeHtml(titleFor(emailType))} ${shortId(order.id)}</p>
         </div>
         <div style="padding:24px;">
           <p>Përshëndetje ${escapeHtml(order.customer_name || "klient")},</p>
-          <p>Faleminderit për porosinë. Mënyra e pagesës është <strong>${paymentLabel(order)}</strong> dhe statusi i porosisë është <strong>${statusLabel(order.status)}</strong>.</p>
+          <p>${introFor(emailType)} Mënyra e pagesës është <strong>${paymentLabel(order)}</strong>, statusi i pagesës është <strong>${paymentStatusLabel(order.payment_status)}</strong> dhe statusi i porosisë është <strong>${statusLabel(order.status)}</strong>.</p>
           <p><strong>Marrja:</strong> ${deliveryMethodLabel(order.delivery_method ?? "delivery")}${order.pickup_location ? ` · ${escapeHtml(order.pickup_location)}` : ""}</p>
           <p><strong>Data e vlerësuar:</strong> ${formatDate(order.estimated_delivery_date)}</p>
           <table style="width:100%;border-collapse:collapse;margin-top:18px;">${items}</table>
@@ -148,11 +152,12 @@ function renderEmail(order: OrderRow) {
   `;
 }
 
-function renderTextEmail(order: OrderRow) {
+function renderTextEmail(order: OrderRow, emailType: EmailType) {
   const itemLines = order.order_items.map((item) => `- ${item.quantity} x ${item.product_name}: ${money(item.total_price)} | garanci ${item.warranty_months ?? 0} muaj | ${deliveryLabel(item.delivery_estimate ?? "Standard delivery")}`);
   return [
-    `Konfirmimi i porosisë Medium Mobil Shop ${shortId(order.id)}`,
+    `${titleFor(emailType)} Medium Mobil Shop ${shortId(order.id)}`,
     `Mënyra e pagesës: ${paymentLabel(order)}`,
+    `Statusi i pagesës: ${paymentStatusLabel(order.payment_status)}`,
     `Marrja: ${deliveryMethodLabel(order.delivery_method ?? "delivery")}${order.pickup_location ? ` - ${order.pickup_location}` : ""}`,
     `Statusi: ${statusLabel(order.status)}`,
     `Data e vlerësuar: ${formatDate(order.estimated_delivery_date)}`,
@@ -189,6 +194,37 @@ function paymentLabel(order: Pick<OrderRow, "payment_method" | "installment_mont
     return `Pagesë mujore (${months} muaj, ${money(order.total / months)}/muaj)`;
   }
   return escapeHtml(order.payment_method);
+}
+
+function subjectFor(order: OrderRow, emailType: EmailType) {
+  return `${titleFor(emailType)} Medium Mobil Shop ${shortId(order.id)}`;
+}
+
+function titleFor(emailType: EmailType) {
+  if (emailType === "paid") return "Pagesa u pranua për porosinë";
+  if (emailType === "shipped") return "Porosia u dërgua";
+  return "Konfirmimi i porosisë";
+}
+
+function introFor(emailType: EmailType) {
+  if (emailType === "paid") return "Pagesa me Stripe u pranua me sukses.";
+  if (emailType === "shipped") return "Porosia jote është dërguar dhe është rrugës.";
+  return "Faleminderit për porosinë.";
+}
+
+function paymentStatusLabel(value: string | null) {
+  const labels: Record<string, string> = {
+    unpaid: "e papaguar",
+    pending: "në pritje",
+    paid: "e paguar",
+    failed: "dështuar",
+    refunded: "e rimbursuar",
+  };
+  return labels[value ?? ""] ?? "në pritje";
+}
+
+function parseEmailType(value: unknown): EmailType {
+  return value === "paid" || value === "shipped" ? value : "placed";
 }
 
 function deliveryMethodLabel(value: string) {

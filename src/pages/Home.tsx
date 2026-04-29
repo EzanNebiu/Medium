@@ -1,4 +1,4 @@
-import { ArrowRight, Headphones, ShieldCheck, Truck, WalletCards, Wrench, PhoneCall } from "lucide-react";
+import { Apple, ArrowRight, Camera, Cpu, Headphones, PlugZap, Shield, ShieldCheck, Smartphone, Truck, WalletCards, Watch, Wrench, PhoneCall, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ProductCard } from "../components/products/ProductCard";
 import { Button } from "../components/ui/button";
@@ -13,6 +13,19 @@ const trust = [
   ["Pagesë e sigurt", WalletCards],
   ["Mbështetje për klientë", PhoneCall],
 ];
+
+const categoryVisuals: Record<string, { Icon: typeof Smartphone; label: string; className: string }> = {
+  iPhone: { Icon: Apple, label: "iOS", className: "bg-slate-950 text-white" },
+  "Samsung Galaxy": { Icon: Smartphone, label: "Galaxy", className: "bg-blue-50 text-blue-700" },
+  Xiaomi: { Icon: Zap, label: "Mi", className: "bg-orange-50 text-orange-700" },
+  "Google Pixel": { Icon: Camera, label: "Pixel", className: "bg-green-50 text-green-700" },
+  OnePlus: { Icon: Cpu, label: "1+", className: "bg-red-50 text-red-700" },
+  Accessories: { Icon: Shield, label: "Aks", className: "bg-slate-100 text-slate-800" },
+  Chargers: { Icon: PlugZap, label: "65W", className: "bg-orange-50 text-primary" },
+  Cases: { Icon: ShieldCheck, label: "Case", className: "bg-zinc-100 text-zinc-800" },
+  Earbuds: { Icon: Headphones, label: "Audio", className: "bg-purple-50 text-purple-700" },
+  Smartwatches: { Icon: Watch, label: "Watch", className: "bg-cyan-50 text-cyan-700" },
+};
 
 export default function Home() {
   const featured = seedProducts.filter((product) => product.is_featured).slice(0, 4);
@@ -84,14 +97,23 @@ export default function Home() {
       <section className="container-page py-8">
         <h2 className="mb-5 text-2xl font-black">Bli sipas kategorisë</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {categories.map((category) => (
-            <Link key={category} to={`/products?category=${encodeURIComponent(category)}`}>
-              <Card className="flex h-24 items-center justify-between p-4 hover:border-primary">
-                <span className="font-bold">{sqCategory(category)}</span>
-                <Headphones className="h-5 w-5 text-primary" />
-              </Card>
-            </Link>
-          ))}
+          {categories.map((category) => {
+            const visual = categoryVisuals[category] ?? categoryVisuals.Accessories;
+            const Icon = visual.Icon;
+            return (
+              <Link key={category} to={`/products?category=${encodeURIComponent(category)}`}>
+                <Card className="group flex h-28 items-center justify-between gap-4 p-4 transition hover:-translate-y-0.5 hover:border-primary hover:shadow-md">
+                  <div className="min-w-0">
+                    <span className="block font-black leading-tight">{sqCategory(category)}</span>
+                    <span className="mt-1 block text-xs font-bold text-muted-foreground">{visual.label}</span>
+                  </div>
+                  <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-full ${visual.className}`}>
+                    <Icon className="h-6 w-6 transition group-hover:scale-110" />
+                  </span>
+                </Card>
+              </Link>
+            );
+          })}
         </div>
       </section>
     </div>
