@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900" viewBox="0 0 900 900">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#fff7ed"/><stop offset="1" stop-color="#ffffff"/></linearGradient>
+    <linearGradient id="phone" x1="0" x2="1"><stop stop-color="#111827"/><stop offset="1" stop-color="#52525b"/></linearGradient>
+  </defs>
+  <rect width="900" height="900" fill="url(#bg)"/>
+  <ellipse cx="450" cy="785" rx="250" ry="38" fill="#111827" opacity=".12"/>
+  <rect x="285" y="90" width="330" height="720" rx="62" fill="url(#phone)"/>
+  <rect x="313" y="132" width="274" height="636" rx="42" fill="#f8fafc"/>
+  <rect x="394" y="112" width="112" height="16" rx="8" fill="#09090b"/>
+  <circle cx="380" cy="214" r="39" fill="#18181b"/>
+  <circle cx="380" cy="214" r="21" fill="#334155"/>
+  <circle cx="468" cy="214" r="39" fill="#18181b"/>
+  <circle cx="468" cy="214" r="21" fill="#334155"/>
+  <circle cx="424" cy="286" r="39" fill="#18181b"/>
+  <circle cx="424" cy="286" r="21" fill="#334155"/>
+  <circle cx="511" cy="286" r="12" fill="#f97316"/>
+  <rect x="350" y="408" width="200" height="22" rx="11" fill="#111827"/>
+  <rect x="382" y="458" width="136" height="14" rx="7" fill="#f97316"/>
+</svg>
