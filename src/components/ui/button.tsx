@@ -9,10 +9,10 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 export function Button({ className, variant = "primary", size = "md", children, ...props }: ButtonProps) {
   const variants = {
-    primary: "bg-primary text-primary-foreground hover:bg-orange-600",
-    secondary: "bg-black text-white hover:bg-zinc-800",
+    primary: "bg-black text-white hover:bg-primary",
+    secondary: "bg-primary text-white hover:bg-orange-600",
     ghost: "bg-transparent hover:bg-accent text-foreground",
-    outline: "border bg-white hover:bg-accent",
+    outline: "border border-black/20 bg-white hover:border-primary hover:bg-orange-50 hover:text-primary",
     danger: "bg-destructive text-destructive-foreground hover:bg-red-700",
   };
   const sizes = {

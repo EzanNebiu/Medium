@@ -67,20 +67,28 @@ export async function saveProduct(input: Partial<Product> & { specs?: ProductSpe
     raw_api_response: null,
   };
 
-  const { data, error } = await supabase.from("products").insert(productPayload).select().single();
+  const { data, error } = input.id
+    ? await supabase.from("products").update(productPayload).eq("id", input.id).select("*, product_specs(*), categories(name, slug)").single()
+    : await supabase.from("products").insert(productPayload).select("*, product_specs(*), categories(name, slug)").single();
   if (error) return { product: null, error };
 
   if (input.specs) {
-    await supabase.from("product_specs").insert({ ...input.specs, product_id: data.id });
+    const { data: existingSpec } = await supabase.from("product_specs").select("id").eq("product_id", data.id).maybeSingle();
+    if (existingSpec?.id) {
+      await supabase.from("product_specs").update({ ...input.specs, product_id: data.id }).eq("id", existingSpec.id);
+    } else {
+      await supabase.from("product_specs").insert({ ...input.specs, product_id: data.id });
+    }
   }
 
   await supabase.from("api_import_logs").insert({
     search_query: input.name,
     selected_device: input.api_device_id ?? input.name,
-    status: input.imported_from_api ? "imported" : "manual",
+    status: input.id ? "updated" : input.imported_from_api ? "imported" : "manual",
   });
 
-  return { product: mapProductFromDb(data), error: null };
+  const { data: refreshed } = await supabase.from("products").select("*, product_specs(*), categories(name, slug)").eq("id", data.id).single();
+  return { product: mapProductFromDb(refreshed ?? data), error: null };
 }
 
 export function applyFilters(products: Product[], filters: ProductFilters, sort: SortOption) {

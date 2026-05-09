@@ -184,6 +184,7 @@ export function ProductForm({ initial }: { initial?: Partial<Product> }) {
       return;
     }
     const payload: Partial<Product> = {
+      id: initial?.id,
       name: form.name,
       slug: slugify(form.name),
       brand: form.brand,

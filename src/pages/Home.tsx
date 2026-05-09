@@ -1,11 +1,19 @@
-import { Apple, ArrowRight, AtSign, BadgePercent, Camera, Clock, Cpu, Headphones, MapPin, MessageCircle, PhoneCall, PlugZap, Shield, ShieldCheck, ShoppingBag, Smartphone, Truck, WalletCards, Watch, Wrench, Zap } from "lucide-react";
+import { ArrowRight, AtSign, BadgePercent, Clock, Headphones, MapPin, MessageCircle, PhoneCall, PlugZap, Shield, ShieldCheck, ShoppingBag, Smartphone, Truck, WalletCards, Watch, Wrench } from "lucide-react";
+import type { ComponentType } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { SiApple, SiGoogle, SiOneplus, SiSamsung, SiXiaomi } from "react-icons/si";
 import { Link } from "react-router-dom";
 import { ProductCard } from "../components/products/ProductCard";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
+import { ProductImage } from "../components/ui/ProductImage";
 import { categories, seedProducts } from "../data/seedProducts";
 import { sqCategory } from "../lib/albanian";
 import { storeWhatsAppUrl, WHATSAPP_DISPLAY_NUMBER } from "../lib/whatsapp";
+import { getProducts } from "../services/products";
+import { defaultHomepageContent, getHomepageContent } from "../services/siteContent";
+import type { Product } from "../types/product";
+import type { HomepageContent, SiteIconKey } from "../types/siteContent";
 
 const trust = [
   ["Dërgesë e shpejtë në Kosovë", Truck],
@@ -15,46 +23,24 @@ const trust = [
   ["Mbështetje për klientë", PhoneCall],
 ];
 
-const dealSlides: Array<{ title: string; text: string; icon: typeof Smartphone; cta: string }> = [
-  {
-    title: "Oferta sezonale për telefona",
-    text: "Modele iPhone dhe Samsung në fokus, me çmime promocionale dhe konfirmim direkt në WhatsApp.",
-    icon: BadgePercent,
-    cta: "Pyet për ofertat",
-  },
-  {
-    title: "Aksesorë për çdo blerje",
-    text: "Mbushës, këllëfë, kufje dhe xhama mbrojtës me cilësi të garantuar për përdorim të përditshëm.",
-    icon: PlugZap,
-    cta: "Rezervo aksesorë",
-  },
-  {
-    title: "Servisim dhe dekodim",
-    text: "Shërbime për telefona, ndërrim ekranesh dhe ndihmë teknike në dyqan në Prizren.",
-    icon: Wrench,
-    cta: "Kërko servis",
-  },
-  {
-    title: "Black Friday style deals",
-    text: "Fushata me zbritje të mëdha dhe produkte të zgjedhura, bazuar në stilin e postimeve të dyqanit.",
-    icon: ShoppingBag,
-    cta: "Shiko çfarë ka sot",
-  },
-];
+type IconComponent = ComponentType<{ className?: string }>;
 
-const services: Array<[string, string, typeof Smartphone]> = [
-  ["Shitje telefonash", "Telefona të rinj dhe modele të kërkuara nga Apple, Samsung, Xiaomi dhe më shumë.", Smartphone],
-  ["Servisim", "Riparim, kontroll teknik dhe ndërrim pjesësh për telefona.", Wrench],
-  ["Dekodim", "Ndihmë për dekodim dhe konfigurim të pajisjeve.", ShieldCheck],
-  ["Aksesorë", "Mbushës, kufje, këllëfë dhe xhama mbrojtës me cilësi të garantuar.", Headphones],
-];
+const contentIcons: Record<SiteIconKey, IconComponent> = {
+  smartphone: Smartphone,
+  wrench: Wrench,
+  shield: ShieldCheck,
+  headphones: Headphones,
+  plug: PlugZap,
+  badge: BadgePercent,
+  shopping: ShoppingBag,
+};
 
-const categoryVisuals: Record<string, { Icon: typeof Smartphone; label: string; className: string }> = {
-  iPhone: { Icon: Apple, label: "iOS", className: "bg-slate-950 text-white" },
-  "Samsung Galaxy": { Icon: Smartphone, label: "Galaxy", className: "bg-blue-50 text-blue-700" },
-  Xiaomi: { Icon: Zap, label: "Mi", className: "bg-orange-50 text-orange-700" },
-  "Google Pixel": { Icon: Camera, label: "Pixel", className: "bg-green-50 text-green-700" },
-  OnePlus: { Icon: Cpu, label: "1+", className: "bg-red-50 text-red-700" },
+const categoryVisuals: Record<string, { Icon: IconComponent; label: string; className: string }> = {
+  iPhone: { Icon: SiApple, label: "iOS", className: "bg-slate-950 text-white" },
+  "Samsung Galaxy": { Icon: SiSamsung, label: "Galaxy", className: "bg-blue-50 text-blue-700" },
+  Xiaomi: { Icon: SiXiaomi, label: "Mi", className: "bg-orange-50 text-orange-700" },
+  "Google Pixel": { Icon: SiGoogle, label: "Pixel", className: "bg-green-50 text-green-700" },
+  OnePlus: { Icon: SiOneplus, label: "1+", className: "bg-red-50 text-red-700" },
   Accessories: { Icon: Shield, label: "Aks", className: "bg-slate-100 text-slate-800" },
   Chargers: { Icon: PlugZap, label: "65W", className: "bg-orange-50 text-primary" },
   Cases: { Icon: ShieldCheck, label: "Case", className: "bg-zinc-100 text-zinc-800" },
@@ -63,37 +49,66 @@ const categoryVisuals: Record<string, { Icon: typeof Smartphone; label: string; 
 };
 
 export default function Home() {
-  const featured = seedProducts.filter((product) => product.is_featured).slice(0, 4);
-  const arrivals = [...seedProducts].slice(4, 8);
+  const [products, setProducts] = useState<Product[]>(seedProducts);
+  const [content, setContent] = useState<HomepageContent>(defaultHomepageContent);
+
+  useEffect(() => {
+    void Promise.all([getProducts(), getHomepageContent()]).then(([nextProducts, nextContent]) => {
+      setProducts(nextProducts);
+      setContent(nextContent);
+    });
+  }, []);
+
+  const heroProduct = useMemo(() => products.find((product) => product.id === content.heroProductId) ?? products[1] ?? products[0] ?? seedProducts[0], [content.heroProductId, products]);
+  const featured = useMemo(() => pickProducts(products, content.featuredProductIds, products.filter((product) => product.is_featured).slice(0, 4)), [content.featuredProductIds, products]);
+  const arrivals = useMemo(() => pickProducts(products, content.newArrivalProductIds, products.slice(4, 8)), [content.newArrivalProductIds, products]);
+  const dealSlides = useMemo(() => content.dealBanners.filter((deal) => deal.active).sort((a, b) => a.sort_order - b.sort_order), [content.dealBanners]);
+  const services = useMemo(() => content.services.filter((service) => service.active).sort((a, b) => a.sort_order - b.sort_order), [content.services]);
 
   return (
     <div>
-      <section className="bg-white">
-        <div className="container-page grid gap-8 py-6 md:py-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
-          <div className="space-y-5 pt-2 lg:sticky lg:top-6 lg:pt-6">
-            <span className="inline-flex rounded-full bg-orange-50 px-3 py-1 text-sm font-bold text-primary">Java e ofertave Medium Mobil Shop</span>
-            <h1 className="max-w-2xl text-4xl font-black tracking-tight text-slate-950 md:text-6xl">Telefona flagship, garanci zyrtare, çmime të qarta.</h1>
-            <p className="max-w-xl text-lg text-muted-foreground">Bli iPhone, Samsung Galaxy, Pixel, Xiaomi, OnePlus dhe aksesorë me dërgesë të shpejtë në gjithë Kosovën.</p>
-            <div className="flex flex-wrap gap-3">
-              <Link to="/products"><Button size="lg">Shfleto ofertat <ArrowRight className="h-5 w-5" /></Button></Link>
-              <a href={storeWhatsAppUrl("Përshëndetje, dua të pyes për ofertat aktuale të Medium Mobil Shop.")} target="_blank" rel="noreferrer"><Button size="lg" variant="outline"><MessageCircle className="h-5 w-5" /> WhatsApp</Button></a>
+      <section className="bg-[#211d22] text-white">
+        <div className="container-page grid min-h-[auto] items-center gap-8 py-10 sm:min-h-[560px] sm:gap-10 sm:py-16 lg:grid-cols-[0.9fr_1.1fr]">
+          <div>
+            <span className="text-xl font-black text-white/35 sm:text-2xl">{content.heroBadge}</span>
+            <h1 className="mt-5 max-w-3xl text-4xl font-light leading-none tracking-tight sm:mt-7 sm:text-5xl md:text-7xl">
+              {content.heroTitle} <span className="font-black">{content.heroHighlight}</span>
+            </h1>
+            <p className="mt-6 max-w-xl text-lg text-zinc-300">{content.heroText}</p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link to="/products"><Button size="lg" variant="outline" className="border-white bg-transparent text-white hover:bg-white hover:text-black">Shfleto tani</Button></Link>
+              <a href={storeWhatsAppUrl("Përshëndetje, dua të pyes për ofertat aktuale të Medium Mobil Shop.")} target="_blank" rel="noreferrer"><Button size="lg" variant="secondary"><MessageCircle className="h-5 w-5" /> WhatsApp</Button></a>
             </div>
-            <div className="grid gap-2 pt-2 text-sm font-semibold text-slate-700 sm:grid-cols-2">
+            <div className="mt-8 grid gap-2 text-sm font-semibold text-zinc-300 sm:grid-cols-2">
               <span className="flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> Prizren, Kosovë</span>
               <span className="flex items-center gap-2"><Clock className="h-4 w-4 text-primary" /> Hënë - Shtunë, 09:00 - 20:00</span>
               <a className="flex items-center gap-2 hover:text-primary" href="https://www.instagram.com/mobilshopmediumprizren/" target="_blank" rel="noreferrer"><AtSign className="h-4 w-4 text-primary" /> @mobilshopmediumprizren</a>
               <span className="flex items-center gap-2"><PhoneCall className="h-4 w-4 text-primary" /> {WHATSAPP_DISPLAY_NUMBER}</span>
             </div>
           </div>
-          <div className="lg:max-h-[calc(100vh-235px)] lg:overflow-y-auto lg:pr-2 [scrollbar-width:thin] [scrollbar-color:hsl(var(--primary))_hsl(var(--muted))]">
-            <div className="grid auto-rows-fr gap-4 sm:grid-cols-2">
-              {seedProducts.slice(1, 5).map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+          <div className="relative min-h-[250px] overflow-hidden sm:min-h-[360px]">
+            <div className="absolute inset-x-10 bottom-0 h-28 rounded-[50%] bg-primary/25 blur-3xl" />
+            <ProductImage className="relative mx-auto h-[270px] w-full max-w-[620px] bg-transparent object-contain drop-shadow-2xl sm:h-[360px] md:h-[420px]" src={heroProduct.main_image_url} alt={heroProduct.name} seed={heroProduct.name} />
           </div>
         </div>
       </section>
+
+      {/*<section className="grid md:grid-cols-2">*/}
+      {/*  {promoProducts.map((product, index) => (*/}
+      {/*    <Link key={product.id} to={`/products/${product.slug}`} className={`group grid min-h-[280px] overflow-hidden ${index === 1 || index === 2 ? "bg-zinc-100" : index === 3 ? "bg-zinc-900 text-white" : "bg-white"}`}>*/}
+      {/*      <div className="grid items-center gap-6 p-8 md:grid-cols-2 lg:p-12">*/}
+      {/*        <ProductImage className="h-56 w-full bg-transparent object-contain transition duration-300 group-hover:scale-105" src={product.main_image_url} alt={product.name} seed={product.name} />*/}
+      {/*        <div>*/}
+      {/*          <h2 className="text-3xl font-light leading-tight md:text-4xl">*/}
+      {/*            {product.brand} <span className="font-black">{product.name.replace(product.brand, "").trim()}</span>*/}
+      {/*          </h2>*/}
+      {/*          <p className={`mt-3 text-sm leading-6 ${index === 3 ? "text-zinc-300" : "text-muted-foreground"}`}>{product.short_description}</p>*/}
+      {/*          <Button className={index === 3 ? "mt-5 border-white bg-transparent text-white hover:bg-white hover:text-black" : "mt-5"} variant={index === 3 ? "outline" : "primary"}>{index === 3 ? "Shiko ofertën" : "Bli tani"}</Button>*/}
+      {/*        </div>*/}
+      {/*      </div>*/}
+      {/*    </Link>*/}
+      {/*  ))}*/}
+      {/*</section>*/}
 
       <section className="container-page grid gap-3 py-8 md:grid-cols-5">
         {trust.map(([label, Icon]) => (
@@ -116,18 +131,17 @@ export default function Home() {
         </div>
         <div className="flex snap-x gap-4 overflow-x-auto pb-4 [scrollbar-width:thin] [scrollbar-color:hsl(var(--primary))_hsl(var(--muted))]">
           {dealSlides.map((deal) => {
-            const Icon = deal.icon;
+            const Icon = contentIcons[deal.icon] ?? BadgePercent;
             return (
               <Card key={deal.title} className="min-w-[280px] snap-start p-5 sm:min-w-[370px]">
                 <div className="flex h-full flex-col">
+                  {deal.image_url && <ProductImage className="mb-4 aspect-[16/9] w-full rounded-md object-cover" src={deal.image_url} alt={deal.title} seed={deal.title} />}
                   <span className="grid h-12 w-12 place-items-center rounded-full bg-orange-50 text-primary">
                     <Icon className="h-6 w-6" />
                   </span>
                   <h3 className="mt-5 text-xl font-black">{deal.title}</h3>
                   <p className="mt-2 flex-1 text-sm leading-6 text-muted-foreground">{deal.text}</p>
-                  <a className="mt-5 inline-flex text-sm font-black text-primary" href={storeWhatsAppUrl(`Përshëndetje, dua më shumë informata: ${deal.title}`)} target="_blank" rel="noreferrer">
-                    {deal.cta} <ArrowRight className="ml-1 h-4 w-4" />
-                  </a>
+                  <DealCta href={deal.href} label={deal.cta} />
                 </div>
               </Card>
             );
@@ -135,18 +149,21 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="container-page grid gap-4 py-8 md:grid-cols-2 lg:grid-cols-4">
-        {services.map(([title, text, Icon]) => (
-          <Card key={title as string} className="p-5">
+      <section id="sherbime" className="container-page grid gap-4 py-8 md:grid-cols-2 lg:grid-cols-4">
+        {services.map((service) => {
+          const Icon = contentIcons[service.icon] ?? Wrench;
+          return (
+          <Card key={service.id} className="p-5">
             <Icon className="h-7 w-7 text-primary" />
-            <h3 className="mt-4 font-black">{title as string}</h3>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">{text as string}</p>
+            <h3 className="mt-4 font-black">{service.title}</h3>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{service.text}</p>
           </Card>
-        ))}
+          );
+        })}
       </section>
 
       <section className="container-page py-8">
-        <div className="mb-5 flex items-center justify-between">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-2xl font-black">Produktet e veçuara</h2>
           <Link className="text-sm font-bold text-primary" to="/products">Shiko të gjitha</Link>
         </div>
@@ -157,14 +174,14 @@ export default function Home() {
 
       <section className="container-page grid gap-6 py-8 lg:grid-cols-2">
         <Card className="bg-slate-950 p-8 text-white">
-          <h2 className="text-3xl font-black">Oferta speciale</h2>
-          <p className="mt-2 text-slate-300">Kombino telefonin me mbushës, këllëf dhe kufje për çmim më të mirë në fund.</p>
+          <h2 className="text-3xl font-black">{content.specialOfferTitle}</h2>
+          <p className="mt-2 text-slate-300">{content.specialOfferText}</p>
           <Link to="/products"><Button className="mt-6 bg-white text-slate-950 hover:bg-slate-100">Shfleto ofertat</Button></Link>
         </Card>
         <Card className="p-8">
           <h2 className="text-3xl font-black">Brendet më të kërkuara</h2>
           <div className="mt-5 flex flex-wrap gap-2">
-            {["Apple", "Samsung", "Xiaomi", "Google", "OnePlus", "Medium Mobil"].map((brand) => (
+            {content.brandFilters.map((brand) => (
               <Link key={brand} to={`/products?brand=${brand}`} className="rounded-full border px-4 py-2 text-sm font-bold hover:border-primary hover:text-primary">{brand}</Link>
             ))}
           </div>
@@ -178,7 +195,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="container-page py-8">
+      <section className="container-page section-air">
         <h2 className="mb-5 text-2xl font-black">Bli sipas kategorisë</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {categories.map((category) => {
@@ -186,14 +203,14 @@ export default function Home() {
             const Icon = visual.Icon;
             return (
               <Link key={category} to={`/products?category=${encodeURIComponent(category)}`}>
-                <Card className="group flex h-28 items-center justify-between gap-4 p-4 transition hover:-translate-y-0.5 hover:border-primary hover:shadow-md">
+                <Card className="group flex h-36 flex-col items-center justify-center gap-3 border-0 bg-zinc-100 p-4 text-center transition hover:-translate-y-0.5 hover:bg-orange-50">
+                  <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-full ${visual.className}`}>
+                    <Icon className="h-6 w-6 transition group-hover:scale-110" />
+                  </span>
                   <div className="min-w-0">
                     <span className="block font-black leading-tight">{sqCategory(category)}</span>
                     <span className="mt-1 block text-xs font-bold text-muted-foreground">{visual.label}</span>
                   </div>
-                  <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-full ${visual.className}`}>
-                    <Icon className="h-6 w-6 transition group-hover:scale-110" />
-                  </span>
                 </Card>
               </Link>
             );
@@ -202,4 +219,21 @@ export default function Home() {
       </section>
     </div>
   );
+}
+
+function pickProducts(products: Product[], selectedIds: string[], fallback: Product[]) {
+  const selected = selectedIds
+    .map((id) => products.find((product) => product.id === id))
+    .filter((product): product is Product => Boolean(product));
+  return selected.length ? selected.slice(0, 8) : fallback;
+}
+
+function DealCta({ href, label }: { href: string; label: string }) {
+  const target = href || "/products";
+  const className = "mt-5 inline-flex text-sm font-black text-primary";
+  const content = <>{label} <ArrowRight className="ml-1 h-4 w-4" /></>;
+  if (/^https?:\/\//i.test(target)) {
+    return <a className={className} href={target} target="_blank" rel="noreferrer">{content}</a>;
+  }
+  return <Link className={className} to={target}>{content}</Link>;
 }

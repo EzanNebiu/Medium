@@ -1,8 +1,9 @@
-import { BarChart3, Package, PlusCircle, ShoppingBag } from "lucide-react";
+import { BarChart3, LayoutTemplate, Package, PlusCircle, ShoppingBag } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 
 const links = [
   ["/admin", "Paneli", BarChart3],
+  ["/admin/homepage", "Faqja kryesore", LayoutTemplate],
   ["/admin/products", "Produktet", Package],
   ["/admin/products/new", "Shto produkt", PlusCircle],
   ["/admin/orders", "Porositë", ShoppingBag],

@@ -37,7 +37,7 @@ export function Footer() {
                 Medium <span className="text-primary">Mobil Shop</span>
               </Link>
               <p className="mt-3 max-w-sm text-sm text-zinc-300">
-                Dyqan modern për telefona dhe aksesorë, me garanci zyrtare, pagesë fleksibile dhe dërgesë në Kosovë.
+                Dyqan modern për telefona, aksesorë, servisim dhe porosi përmes WhatsApp në Prizren.
               </p>
               <div className="mt-5 flex flex-wrap gap-3 text-xs font-bold text-zinc-200">
                 <span className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-2"><Truck className="h-4 w-4 text-primary" /> Dërgesë ose marrje në dyqan</span>
@@ -59,7 +59,7 @@ export function Footer() {
               <div className="mt-4 grid gap-3 text-sm text-zinc-300">
                 <a className="flex items-center gap-2 hover:text-primary" href={`mailto:${contact.email}`}><Mail className="h-4 w-4" /> {contact.email}</a>
                 <span className="flex items-center gap-2"><Phone className="h-4 w-4" /> Mbështetje për klientë</span>
-                <span className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Prishtinë, Kosovë</span>
+                <span className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Prizren, Kosovë</span>
               </div>
               <div className="mt-5 flex gap-3">
                 <a className="rounded-md border border-white/10 p-2 text-zinc-300 transition hover:border-primary hover:text-primary" href={contact.linkedInUrl.trim()} target="_blank" rel="noreferrer" aria-label="LinkedIn">

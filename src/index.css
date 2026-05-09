@@ -3,15 +3,15 @@
 @tailwind utilities;
 
 :root {
-  --background: 30 33% 98%;
+  --background: 0 0% 98%;
   --foreground: 222 47% 11%;
   --card: 0 0% 100%;
   --card-foreground: 222 47% 11%;
   --primary: 24 95% 53%;
   --primary-foreground: 0 0% 100%;
-  --muted: 24 18% 91%;
+  --muted: 0 0% 94%;
   --muted-foreground: 215 16% 47%;
-  --accent: 30 45% 95%;
+  --accent: 24 55% 96%;
   --accent-foreground: 222 47% 11%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
@@ -38,8 +38,17 @@ a {
 }
 
 .container-page {
-  width: min(1180px, calc(100% - 32px));
+  width: min(1320px, calc(100% - 32px));
   margin: 0 auto;
+}
+
+.section-air {
+  padding-top: clamp(3rem, 6vw, 6rem);
+  padding-bottom: clamp(3rem, 6vw, 6rem);
+}
+
+.soft-panel {
+  background: #f5f5f5;
 }
 
 .line-clamp-2 {

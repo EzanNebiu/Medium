@@ -1,4 +1,4 @@
-import { Heart, Minus, Plus, ShoppingBag, ShoppingCart, Star } from "lucide-react";
+import { Battery, Cpu, Heart, Minus, Plus, ShoppingBag, ShoppingCart, Smartphone, Star, Truck, Wrench } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ProductCard } from "../components/products/ProductCard";
@@ -79,25 +79,31 @@ export default function ProductDetails() {
   ];
 
   return (
-    <div className="container-page py-8">
-      <Link to="/products" className="text-sm font-bold text-primary">Kthehu te produktet</Link>
-      <section className="mt-5 grid gap-8 lg:grid-cols-2">
+    <div className="container-page section-air">
+      <div className="mb-14 flex flex-wrap items-center gap-3 text-base text-zinc-400">
+        <Link to="/" className="hover:text-black">Ballina</Link>
+        <span>/</span>
+        <Link to="/products" className="hover:text-black">Produktet</Link>
+        <span>/</span>
+        <span className="font-semibold text-black">{product.name}</span>
+      </div>
+      <section className="grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
         <div className="grid min-w-0 gap-3 md:grid-cols-[96px_1fr]">
           <div className="flex gap-3 overflow-auto md:flex-col">
             {[product.main_image_url, ...product.gallery_images].map((image) => (
-              <button key={image} className={`aspect-square w-20 rounded-md border bg-white p-1 ${activeImage === image ? "border-primary" : ""}`} onClick={() => setActiveImage(image)}>
-                <ProductImage className="h-full w-full rounded object-cover" src={image} alt={product.name} seed={product.name} />
+              <button key={image} className={`aspect-square w-20 rounded-md border bg-white p-1 transition ${activeImage === image ? "border-black" : "border-black/10 opacity-60 hover:opacity-100"}`} onClick={() => setActiveImage(image)}>
+                <ProductImage className="h-full w-full rounded bg-transparent object-contain" src={image} alt={product.name} seed={product.name} />
               </button>
             ))}
           </div>
-          <div className="aspect-square min-h-0 rounded-lg border bg-white p-4 sm:p-6">
-            <ProductImage className="h-full w-full object-contain" src={activeImage} alt={product.name} seed={product.name} />
+          <div className="aspect-square min-h-0 rounded-lg bg-white p-4 sm:p-8">
+            <ProductImage className="h-full w-full bg-transparent object-contain" src={activeImage} alt={product.name} seed={product.name} />
           </div>
         </div>
         <div className="min-w-0 space-y-5">
           <div>
             <p className="text-sm font-black uppercase text-primary">{product.brand}</p>
-            <h1 className="mt-1 text-2xl font-black leading-tight sm:text-3xl">{product.name}</h1>
+            <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight sm:text-5xl">{product.name}</h1>
             <div className="mt-3 flex flex-wrap gap-2">
               <Badge className="bg-green-50 text-green-700">{product.stock_quantity > 0 ? "Në stok" : "Nuk ka stok"}</Badge>
               <Badge className="bg-orange-50 text-primary">{sqDelivery(product.delivery_badge)}</Badge>
@@ -105,11 +111,27 @@ export default function ProductDetails() {
             </div>
           </div>
           <div className="flex flex-wrap items-end gap-3">
-            <span className="text-3xl font-black sm:text-4xl">{formatCurrency(product.price)}</span>
+            <span className="text-3xl font-black sm:text-5xl">{formatCurrency(product.price)}</span>
             {product.old_price && <span className="text-lg text-muted-foreground line-through">{formatCurrency(product.old_price)}</span>}
             {Boolean(product.discount_percentage) && <Badge className="bg-red-50 text-red-700">-{product.discount_percentage}%</Badge>}
           </div>
           <div className="flex items-center gap-2 text-sm"><Star className="h-4 w-4 fill-yellow-400 text-yellow-400" /> {product.rating.toFixed(1)} nga {product.reviews_count} vlerësime</div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {[
+              ["Ekrani", specs.display, Smartphone],
+              ["Procesori", specs.processor, Cpu],
+              ["Bateria", specs.battery, Battery],
+              ["Dërgesa", sqDelivery(product.delivery_badge), Truck],
+              ["Garancia", `${product.warranty_months} muaj`, Wrench],
+              ["Stoku", product.stock_quantity > 0 ? "Në stok" : "Nuk ka stok", ShoppingBag],
+            ].map(([label, value, Icon]) => (
+              <div key={String(label)} className="rounded-lg bg-zinc-100 p-4">
+                <Icon className="h-5 w-5 text-zinc-500" />
+                <p className="mt-2 text-xs text-zinc-400">{String(label)}</p>
+                <strong className="line-clamp-2 text-sm">{String(value)}</strong>
+              </div>
+            ))}
+          </div>
           <p className="text-muted-foreground">{product.full_description}</p>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="text-sm font-bold">Ngjyra<Select className="mt-2" value={color} onChange={(e) => setColor(e.target.value)}>{product.colors.map((item) => <option key={item}>{translateToAlbanian(item)}</option>)}</Select></label>
@@ -127,17 +149,17 @@ export default function ProductDetails() {
           </div>
         </div>
       </section>
-      <section className="mt-10 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-        <div className="rounded-lg border bg-white p-5">
+      <section className="mt-24 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
+        <div className="rounded-lg bg-white p-8">
           <h2 className="text-xl font-black">Specifikat kryesore</h2>
-          <div className="mt-4 grid gap-3 text-sm">{specsRows.slice(0, 8).map(([label, value]) => <div key={label} className="grid grid-cols-[minmax(90px,0.8fr)_1fr] gap-4"><span className="text-muted-foreground">{label}</span><strong className="min-w-0 text-right">{value}</strong></div>)}</div>
+          <div className="mt-4 grid gap-3 text-sm">{specsRows.slice(0, 8).map(([label, value]) => <div key={label} className="grid gap-1 sm:grid-cols-[minmax(90px,0.8fr)_1fr] sm:gap-4"><span className="text-muted-foreground">{label}</span><strong className="min-w-0 sm:text-right">{value}</strong></div>)}</div>
         </div>
-        <div className="rounded-lg border bg-white p-5">
+        <div className="rounded-lg bg-white p-8">
           <h2 className="text-xl font-black">Tabela e plotë e specifikave</h2>
           <div className="mt-4 divide-y text-sm">{specsRows.map(([label, value]) => <div key={label} className="grid gap-1 py-3 sm:grid-cols-[150px_1fr] sm:gap-4"><strong>{label}</strong><span className="min-w-0">{value}</span></div>)}</div>
         </div>
       </section>
-      <section className="mt-10 rounded-lg border bg-white p-5">
+      <section className="mt-10 rounded-lg bg-white p-8">
         <h2 className="text-xl font-black">Vlerësimet</h2>
         <p className="mt-2 text-muted-foreground">Klientët vlerësojnë dërgesën e shpejtë, paketimin e mbyllur dhe menaxhimin e thjeshtë të garancisë.</p>
       </section>

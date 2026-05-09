@@ -29,13 +29,13 @@ export function ProductFiltersPanel({ products, filters, onChange }: Props) {
   };
 
   return (
-    <aside className="space-y-6">
+    <aside className="space-y-8">
       <div>
-        <label className="text-sm font-bold">Kërko produkte</label>
+        <label className="text-lg font-black">Kërko produkte</label>
         <Input className="mt-2" value={filters.query} onChange={(event) => onChange({ ...filters, query: event.target.value })} placeholder="Kërko model ose brend" />
       </div>
       <div>
-        <label className="text-sm font-bold">Çmimi</label>
+        <label className="text-lg font-black">Çmimi</label>
         <div className="mt-2 grid grid-cols-2 gap-2">
           <Input type="number" value={filters.minPrice} onChange={(event) => onChange({ ...filters, minPrice: Number(event.target.value) })} />
           <Input type="number" value={filters.maxPrice} onChange={(event) => onChange({ ...filters, maxPrice: Number(event.target.value) })} />
@@ -44,12 +44,12 @@ export function ProductFiltersPanel({ products, filters, onChange }: Props) {
       {keys.map(([key, label, getter]) => {
         const values = Array.from(new Set(products.flatMap(getter))).filter(Boolean);
         return (
-          <div key={key}>
-            <h3 className="text-sm font-bold">{label}</h3>
-            <div className="mt-2 max-h-44 space-y-2 overflow-auto pr-1">
+          <div key={key} className="border-t border-black/15 pt-5">
+            <h3 className="text-lg font-black">{label}</h3>
+            <div className="mt-4 max-h-52 space-y-3 overflow-auto pr-1">
               {values.map((value) => (
-                <label key={value} className="flex items-center gap-2 text-sm text-slate-700">
-                  <input type="checkbox" checked={(filters[key] as string[]).includes(value)} onChange={() => toggle(key, value)} />
+                <label key={value} className="flex items-center gap-3 text-base text-zinc-800">
+                  <input className="h-4 w-4 accent-black" type="checkbox" checked={(filters[key] as string[]).includes(value)} onChange={() => toggle(key, value)} />
                   {filterLabel(key, value)}
                 </label>
               ))}

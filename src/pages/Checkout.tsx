@@ -118,7 +118,7 @@ export default function Checkout() {
       <p className="mt-2 rounded-md border bg-white p-3 text-sm text-muted-foreground">Për të kryer porosinë duhet të jesh i/e hyrë në llogari. Produktet në shportë ruhen automatikisht gjatë hyrjes ose regjistrimit.</p>
       <p className="mt-2 rounded-md border border-orange-200 bg-orange-50 p-3 text-sm text-slate-700">Pagesa dhe konfirmimi bëhen përmes WhatsApp në numrin <a className="font-black text-primary" href={storeWhatsAppUrl()} target="_blank" rel="noreferrer">{WHATSAPP_DISPLAY_NUMBER}</a>.</p>
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">
-        <form onSubmit={(event) => void submit(event)} className="rounded-lg border bg-white p-5">
+        <form onSubmit={(event) => void submit(event)} className="rounded-lg border bg-white p-4 sm:p-5">
           <div className="mb-6 grid gap-2 sm:grid-cols-4">
             {steps.map((label, index) => <div key={label} className={`rounded-md px-3 py-2 text-sm font-bold ${index === step ? "bg-primary text-white" : "bg-slate-100"}`}>{label}</div>)}
           </div>
@@ -181,12 +181,12 @@ export default function Checkout() {
                 <p><strong>Marrja:</strong> {sqDeliveryMethod(form.deliveryMethod)}</p>
                 <p><strong>Pagesa:</strong> {sqPayment(form.paymentMethod)}{form.paymentMethod === "monthly" ? ` (${form.installmentMonths} muaj, ${formatCurrency(monthlyAmount)}/muaj)` : ""}</p>
               </div>
-              {items.map((item) => <div key={item.product.id} className="flex justify-between text-sm"><span>{item.quantity} x {item.product.name}</span><strong>{formatCurrency(item.quantity * item.product.price)}</strong></div>)}
+              {items.map((item) => <div key={item.product.id} className="flex flex-wrap justify-between gap-2 text-sm"><span>{item.quantity} x {item.product.name}</span><strong>{formatCurrency(item.quantity * item.product.price)}</strong></div>)}
             </div>
           )}
-          <div className="mt-6 flex justify-between">
-            <Button type="button" variant="outline" disabled={step === 0 || processingPayment} onClick={() => setStep((value) => value - 1)}>Mbrapa</Button>
-            <Button type="submit" disabled={processingPayment}>
+          <div className="mt-6 flex flex-wrap justify-between gap-3">
+            <Button className="min-w-28 flex-1 sm:flex-none" type="button" variant="outline" disabled={step === 0 || processingPayment} onClick={() => setStep((value) => value - 1)}>Mbrapa</Button>
+            <Button className="min-w-28 flex-1 sm:flex-none" type="submit" disabled={processingPayment}>
               {processingPayment ? "Po përgatitet..." : step === steps.length - 1 ? "Porosit në WhatsApp" : "Vazhdo"}
             </Button>
           </div>

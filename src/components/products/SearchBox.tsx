@@ -36,9 +36,9 @@ export function SearchBox({ className = "" }: { className?: string }) {
   return (
     <div className={`relative ${className}`}>
       <form onSubmit={submit}>
-        <Search className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
+        <Search className="absolute left-4 top-3.5 h-5 w-5 text-zinc-400" />
         <Input
-          className="pl-10"
+          className="h-12 rounded-lg border-0 bg-zinc-100 pl-12 text-base shadow-none focus-visible:ring-2 focus-visible:ring-primary"
           placeholder="Kërko iPhone, Galaxy, mbushës..."
           value={query}
           onChange={(event) => setQuery(event.target.value)}

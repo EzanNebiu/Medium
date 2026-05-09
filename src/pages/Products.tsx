@@ -1,5 +1,6 @@
-import { Filter, X } from "lucide-react";
+import { ChevronRight, Filter, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 import { ProductFiltersPanel } from "../components/products/ProductFilters";
 import { ProductCard } from "../components/products/ProductCard";
@@ -61,15 +62,20 @@ export default function Products() {
   const activeChips = Object.entries(filters).flatMap(([key, value]) => Array.isArray(value) ? value.map((item) => ({ key, item })) : []);
 
   return (
-    <div className="container-page py-8">
-      <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+    <div className="container-page section-air">
+      <div className="mb-8 flex flex-wrap items-center gap-2 text-sm text-zinc-400 sm:mb-12 sm:gap-4 sm:text-lg lg:mb-16">
+        <Link to="/" className="hover:text-black">Ballina</Link>
+        <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
+        <span className="text-black">Produktet</span>
+      </div>
+      <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <h1 className="text-3xl font-black">Telefona mobilë dhe aksesorë</h1>
-          <p className="mt-2 text-muted-foreground">Filtro sipas brendit, specifikave, garancisë, stokut dhe çmimit.</p>
+          <h1 className="text-4xl font-black tracking-tight sm:text-5xl">Smartphones</h1>
+          <p className="mt-3 max-w-3xl text-base text-muted-foreground sm:text-lg">Filtro sipas brendit, specifikave, garancisë, stokut dhe çmimit.</p>
         </div>
-        <div className="flex gap-2">
-          <Button className="md:hidden" variant="outline" onClick={() => setMobileFilters(true)}><Filter className="h-4 w-4" /> Filtrat</Button>
-          <Select value={sort} onChange={(event) => setSort(event.target.value as SortOption)}>
+        <div className="flex w-full flex-wrap gap-2 md:w-auto">
+          <Button className="shrink-0 md:hidden" variant="outline" onClick={() => setMobileFilters(true)}><Filter className="h-4 w-4" /> Filtrat</Button>
+          <Select className="h-12 min-w-0 flex-1 rounded-lg border-black/10 bg-white px-4 text-base md:min-w-56 md:flex-none" value={sort} onChange={(event) => setSort(event.target.value as SortOption)}>
             <option value="relevance">Më relevante</option>
             <option value="newest">Më të rejat</option>
             <option value="price-asc">Çmimi nga më i ulëti</option>
@@ -83,15 +89,18 @@ export default function Products() {
           {activeChips.map((chip) => <Badge key={`${chip.key}-${chip.item}`} className="bg-white">{chip.item}</Badge>)}
         </div>
       )}
-      <div className="grid gap-6 md:grid-cols-[260px_1fr]">
-        <div className="hidden md:block"><ProductFiltersPanel products={products} filters={filters} onChange={setFilters} /></div>
+      <div className="grid gap-8 md:grid-cols-[260px_1fr] lg:grid-cols-[300px_1fr]">
+        <div className="hidden md:block"><div className="sticky top-36"><ProductFiltersPanel products={products} filters={filters} onChange={setFilters} /></div></div>
         <div>
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 sm:mb-8">
+            <p className="text-lg font-medium text-zinc-500 sm:text-2xl">Produkte të zgjedhura: <span className="font-black text-black">{visible.length}</span></p>
+          </div>
           {loading ? (
-            <div className="grid auto-rows-fr gap-5 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <Skeleton key={index} className="h-96" />)}</div>
+            <div className="grid auto-rows-fr gap-6 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <Skeleton key={index} className="h-96" />)}</div>
           ) : visible.length ? (
-            <div className="grid auto-rows-fr gap-5 sm:grid-cols-2 lg:grid-cols-3">{visible.map((product) => <ProductCard key={product.id} product={product} />)}</div>
+            <div className="grid auto-rows-fr gap-6 sm:grid-cols-2 xl:grid-cols-3">{visible.map((product) => <ProductCard key={product.id} product={product} />)}</div>
           ) : (
-            <div className="rounded-lg border bg-white p-12 text-center">
+            <div className="rounded-lg border-0 bg-zinc-100 p-12 text-center">
               <h2 className="text-xl font-black">Nuk u gjetën produkte</h2>
               <p className="mt-2 text-muted-foreground">Provo të pastrosh filtrat ose kërko një model tjetër.</p>
             </div>
@@ -100,7 +109,7 @@ export default function Products() {
       </div>
       {mobileFilters && (
         <div className="fixed inset-0 z-50 bg-black/40 md:hidden">
-          <div className="ml-auto h-full w-80 overflow-auto bg-white p-5">
+          <div className="ml-auto h-full w-[min(22rem,calc(100vw-1.5rem))] overflow-auto bg-white p-5">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="font-black">Filtrat</h2>
               <Button variant="ghost" size="icon" onClick={() => setMobileFilters(false)}><X className="h-5 w-5" /></Button>

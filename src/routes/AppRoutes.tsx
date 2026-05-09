@@ -13,6 +13,7 @@ import Register from "../pages/Register";
 import Wishlist from "../pages/Wishlist";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminEditProduct from "../pages/admin/AdminEditProduct";
+import AdminHomepage from "../pages/admin/AdminHomepage";
 import AdminNewProduct from "../pages/admin/AdminNewProduct";
 import AdminOrders from "../pages/admin/AdminOrders";
 import AdminProducts from "../pages/admin/AdminProducts";
@@ -41,6 +42,7 @@ export function AppRoutes() {
             <Route path="products" element={<AdminProducts />} />
             <Route path="products/new" element={<AdminNewProduct />} />
             <Route path="products/:id/edit" element={<AdminEditProduct />} />
+            <Route path="homepage" element={<AdminHomepage />} />
             <Route path="orders" element={<AdminOrders />} />
           </Route>
         </Route>
