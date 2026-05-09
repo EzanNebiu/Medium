@@ -31,11 +31,6 @@ export type Order = {
   payment_provider?: string | null;
   payment_status?: "unpaid" | "pending" | "paid" | "failed" | "refunded" | null;
   installment_months?: number | null;
-  stripe_checkout_session_id?: string | null;
-  stripe_payment_intent_id?: string | null;
-  stripe_subscription_id?: string | null;
-  stripe_customer_id?: string | null;
-  stripe_payment_url?: string | null;
   status: OrderStatus;
   subtotal: number;
   delivery_cost: number;

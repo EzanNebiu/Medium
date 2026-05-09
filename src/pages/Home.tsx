@@ -1,17 +1,52 @@
-import { Apple, ArrowRight, Camera, Cpu, Headphones, PlugZap, Shield, ShieldCheck, Smartphone, Truck, WalletCards, Watch, Wrench, PhoneCall, Zap } from "lucide-react";
+import { Apple, ArrowRight, AtSign, BadgePercent, Camera, Clock, Cpu, Headphones, MapPin, MessageCircle, PhoneCall, PlugZap, Shield, ShieldCheck, ShoppingBag, Smartphone, Truck, WalletCards, Watch, Wrench, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ProductCard } from "../components/products/ProductCard";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
 import { categories, seedProducts } from "../data/seedProducts";
 import { sqCategory } from "../lib/albanian";
+import { storeWhatsAppUrl, WHATSAPP_DISPLAY_NUMBER } from "../lib/whatsapp";
 
 const trust = [
   ["Dërgesë e shpejtë në Kosovë", Truck],
   ["Produkte origjinale", ShieldCheck],
   ["Garanci e përfshirë", Wrench],
-  ["Pagesë e sigurt", WalletCards],
+  ["Porosi përmes WhatsApp", WalletCards],
   ["Mbështetje për klientë", PhoneCall],
+];
+
+const dealSlides: Array<{ title: string; text: string; icon: typeof Smartphone; cta: string }> = [
+  {
+    title: "Oferta sezonale për telefona",
+    text: "Modele iPhone dhe Samsung në fokus, me çmime promocionale dhe konfirmim direkt në WhatsApp.",
+    icon: BadgePercent,
+    cta: "Pyet për ofertat",
+  },
+  {
+    title: "Aksesorë për çdo blerje",
+    text: "Mbushës, këllëfë, kufje dhe xhama mbrojtës me cilësi të garantuar për përdorim të përditshëm.",
+    icon: PlugZap,
+    cta: "Rezervo aksesorë",
+  },
+  {
+    title: "Servisim dhe dekodim",
+    text: "Shërbime për telefona, ndërrim ekranesh dhe ndihmë teknike në dyqan në Prizren.",
+    icon: Wrench,
+    cta: "Kërko servis",
+  },
+  {
+    title: "Black Friday style deals",
+    text: "Fushata me zbritje të mëdha dhe produkte të zgjedhura, bazuar në stilin e postimeve të dyqanit.",
+    icon: ShoppingBag,
+    cta: "Shiko çfarë ka sot",
+  },
+];
+
+const services: Array<[string, string, typeof Smartphone]> = [
+  ["Shitje telefonash", "Telefona të rinj dhe modele të kërkuara nga Apple, Samsung, Xiaomi dhe më shumë.", Smartphone],
+  ["Servisim", "Riparim, kontroll teknik dhe ndërrim pjesësh për telefona.", Wrench],
+  ["Dekodim", "Ndihmë për dekodim dhe konfigurim të pajisjeve.", ShieldCheck],
+  ["Aksesorë", "Mbushës, kufje, këllëfë dhe xhama mbrojtës me cilësi të garantuar.", Headphones],
 ];
 
 const categoryVisuals: Record<string, { Icon: typeof Smartphone; label: string; className: string }> = {
@@ -34,20 +69,28 @@ export default function Home() {
   return (
     <div>
       <section className="bg-white">
-        <div className="container-page grid gap-8 py-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-          <div className="space-y-6">
+        <div className="container-page grid gap-8 py-6 md:py-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
+          <div className="space-y-5 pt-2 lg:sticky lg:top-6 lg:pt-6">
             <span className="inline-flex rounded-full bg-orange-50 px-3 py-1 text-sm font-bold text-primary">Java e ofertave Medium Mobil Shop</span>
             <h1 className="max-w-2xl text-4xl font-black tracking-tight text-slate-950 md:text-6xl">Telefona flagship, garanci zyrtare, çmime të qarta.</h1>
             <p className="max-w-xl text-lg text-muted-foreground">Bli iPhone, Samsung Galaxy, Pixel, Xiaomi, OnePlus dhe aksesorë me dërgesë të shpejtë në gjithë Kosovën.</p>
             <div className="flex flex-wrap gap-3">
               <Link to="/products"><Button size="lg">Shfleto ofertat <ArrowRight className="h-5 w-5" /></Button></Link>
-              <Link to="/products?category=Accessories"><Button size="lg" variant="outline">Aksesorë</Button></Link>
+              <a href={storeWhatsAppUrl("Përshëndetje, dua të pyes për ofertat aktuale të Medium Mobil Shop.")} target="_blank" rel="noreferrer"><Button size="lg" variant="outline"><MessageCircle className="h-5 w-5" /> WhatsApp</Button></a>
+            </div>
+            <div className="grid gap-2 pt-2 text-sm font-semibold text-slate-700 sm:grid-cols-2">
+              <span className="flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> Prizren, Kosovë</span>
+              <span className="flex items-center gap-2"><Clock className="h-4 w-4 text-primary" /> Hënë - Shtunë, 09:00 - 20:00</span>
+              <a className="flex items-center gap-2 hover:text-primary" href="https://www.instagram.com/mobilshopmediumprizren/" target="_blank" rel="noreferrer"><AtSign className="h-4 w-4 text-primary" /> @mobilshopmediumprizren</a>
+              <span className="flex items-center gap-2"><PhoneCall className="h-4 w-4 text-primary" /> {WHATSAPP_DISPLAY_NUMBER}</span>
             </div>
           </div>
-          <div className="grid auto-rows-fr gap-4 sm:grid-cols-2">
-            {seedProducts.slice(1, 5).map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+          <div className="lg:max-h-[calc(100vh-235px)] lg:overflow-y-auto lg:pr-2 [scrollbar-width:thin] [scrollbar-color:hsl(var(--primary))_hsl(var(--muted))]">
+            <div className="grid auto-rows-fr gap-4 sm:grid-cols-2">
+              {seedProducts.slice(1, 5).map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -57,6 +100,47 @@ export default function Home() {
           <Card key={label as string} className="flex items-center gap-3 p-4">
             <Icon className="h-5 w-5 text-primary" />
             <span className="text-sm font-bold">{label as string}</span>
+          </Card>
+        ))}
+      </section>
+
+      <section className="container-page py-8">
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <span className="text-sm font-black uppercase tracking-wide text-primary">Oferta dhe shërbime</span>
+            <h2 className="mt-1 text-2xl font-black">Çfarë promovon dyqani</h2>
+          </div>
+          <a href={storeWhatsAppUrl()} target="_blank" rel="noreferrer">
+            <Button variant="outline"><MessageCircle className="h-4 w-4" /> Kontakto në WhatsApp</Button>
+          </a>
+        </div>
+        <div className="flex snap-x gap-4 overflow-x-auto pb-4 [scrollbar-width:thin] [scrollbar-color:hsl(var(--primary))_hsl(var(--muted))]">
+          {dealSlides.map((deal) => {
+            const Icon = deal.icon;
+            return (
+              <Card key={deal.title} className="min-w-[280px] snap-start p-5 sm:min-w-[370px]">
+                <div className="flex h-full flex-col">
+                  <span className="grid h-12 w-12 place-items-center rounded-full bg-orange-50 text-primary">
+                    <Icon className="h-6 w-6" />
+                  </span>
+                  <h3 className="mt-5 text-xl font-black">{deal.title}</h3>
+                  <p className="mt-2 flex-1 text-sm leading-6 text-muted-foreground">{deal.text}</p>
+                  <a className="mt-5 inline-flex text-sm font-black text-primary" href={storeWhatsAppUrl(`Përshëndetje, dua më shumë informata: ${deal.title}`)} target="_blank" rel="noreferrer">
+                    {deal.cta} <ArrowRight className="ml-1 h-4 w-4" />
+                  </a>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="container-page grid gap-4 py-8 md:grid-cols-2 lg:grid-cols-4">
+        {services.map(([title, text, Icon]) => (
+          <Card key={title as string} className="p-5">
+            <Icon className="h-7 w-7 text-primary" />
+            <h3 className="mt-4 font-black">{title as string}</h3>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{text as string}</p>
           </Card>
         ))}
       </section>

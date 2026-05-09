@@ -49,8 +49,8 @@ export function sqDelivery(value: string) {
 
 export function sqPayment(value: string) {
   if (value === "cash") return "Pagesë me para në dorë";
-  if (value === "electronic-full" || value === "bank" || value === "card") return "Pagesë elektronike e plotë";
-  if (value === "monthly") return "Pagesë mujore";
+  if (value === "electronic-full" || value === "bank" || value === "card") return "Pagesë elektronike përmes WhatsApp";
+  if (value === "monthly") return "Pagesë mujore me marrëveshje";
   return translateToAlbanian(value);
 }
 

@@ -8,7 +8,8 @@ Medium Mobil Shop is a React + Vite + TypeScript mobile phone e-commerce app wit
 - Tailwind CSS with shadcn/ui-compatible component structure
 - React Router DOM
 - Supabase client, Auth, database tables, RLS policies
-- Supabase Edge Functions for RapidAPI phone spec imports, order emails, and Stripe Checkout
+- Supabase Edge Functions for RapidAPI phone spec imports and order emails
+- WhatsApp-based order confirmation for payments and customer communication
 
 ## Local setup
 
@@ -41,42 +42,20 @@ The migration also creates a public Supabase Storage bucket named `product-image
 
 To use the phone import feature, deploy the Edge Function in `supabase/functions/fetch-phone-specs/index.ts`.
 
-Checkout supports delivery to address, pickup in store, cash payment, Stripe full-card payment, and Stripe monthly payment plans. To send checkout confirmation emails, deploy the Edge Function in `supabase/functions/send-order-confirmation/index.ts`. It sends the customer payment method/status, pickup or delivery choice, estimated date, ordered products, totals, monthly plan details when used, and warranty months per product.
+Checkout supports delivery to address, pickup in store, cash payment, electronic payment coordination through WhatsApp, and monthly-payment requests through WhatsApp. The store WhatsApp number used by the frontend is `+383 49 684 500`.
 
-For Stripe payments:
+Run `supabase/migrations/002_order_payment_fields.sql` so orders can store WhatsApp payment provider and payment status.
 
-1. Run `supabase/migrations/002_stripe_payments.sql` in Supabase SQL Editor.
-2. Run `supabase/migrations/003_profile_checkout_fields.sql` so checkout can save customer name, phone, city, address, notes, and delivery preference for future orders.
-3. Deploy these Edge Functions:
-   - `supabase/functions/create-stripe-checkout/index.ts`
-   - `supabase/functions/stripe-webhook/index.ts`
-4. Add Stripe secrets only in Supabase:
+Run `supabase/migrations/003_profile_checkout_fields.sql` so checkout can save customer name, phone, city, address, notes, and delivery preference for future orders.
 
-```bash
-supabase secrets set STRIPE_SECRET_KEY=sk_test_or_live_key
-supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
-```
+Run `supabase/migrations/004_checkout_delivery_order_fields.sql` so orders can store pickup/delivery, installment months, estimated delivery date, warranty months, and delivery notes per order item.
 
-5. In Stripe Dashboard, add a webhook endpoint that points to:
-
-```text
-https://YOUR_SUPABASE_PROJECT_REF.supabase.co/functions/v1/stripe-webhook
-```
-
-Listen for at least:
-
-```text
-checkout.session.completed
-checkout.session.expired
-checkout.session.async_payment_failed
-```
-
-Do not put `STRIPE_SECRET_KEY` or `STRIPE_WEBHOOK_SECRET` in `.env` or any frontend code.
+To send checkout confirmation emails, deploy the Edge Function in `supabase/functions/send-order-confirmation/index.ts`. It sends the customer payment method/status, pickup or delivery choice, estimated date, ordered products, totals, monthly plan details when used, and warranty months per product.
 
 Order emails use `send-order-confirmation` for three events:
 
 - `placed`: sent immediately after the order is created
-- `paid`: sent by the Stripe webhook after `checkout.session.completed`
+- `paid`: optional, if the shop manually confirms payment in a later workflow
 - `shipped`: sent when an admin changes the order status to `shipped`
 
 Add the RapidAPI key only as a Supabase Edge Function secret:
@@ -105,6 +84,16 @@ update profiles set role = 'admin' where id = 'USER_UUID';
 ```
 
 Only admin users can access `/admin/*` and call the RapidAPI Edge Function.
+
+## Netlify deploy
+
+The `public/_redirects` file contains this SPA rewrite:
+
+```text
+/* /index.html 200
+```
+
+Keep it in the deployed build so direct links like `/admin`, `/products/iphone-15-128gb`, and refreshes on nested routes do not return a Netlify 404.
 
 ## Scripts
 

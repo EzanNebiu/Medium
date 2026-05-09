@@ -97,19 +97,42 @@ export const seedProducts: Product[] = rows.map((row, index) => {
 
 export const categories = ["iPhone", "Samsung Galaxy", "Xiaomi", "Google Pixel", "OnePlus", "Accessories", "Chargers", "Cases", "Earbuds", "Smartwatches"];
 
-function productImage(name: string, category: string) {
+export function productImage(name: string, category: string) {
   const lower = name.toLowerCase();
-  if (category === "Chargers") return "/product-images/charger.svg";
-  if (category === "Earbuds") return "/product-images/earbuds.svg";
-  if (category === "Cases") return "/product-images/case.svg";
-  if (category === "Accessories") return "/product-images/glass.svg";
-  if (category === "Smartwatches") return "/product-images/watch.svg";
-  if (lower.includes("ultra")) return "/product-images/galaxy-ultra.svg";
-  if (category === "iPhone" && lower.includes("pro")) return "/product-images/iphone-pro.svg";
-  if (category === "iPhone") return "/product-images/iphone.svg";
-  if (category === "Samsung Galaxy") return "/product-images/galaxy.svg";
-  if (category === "Xiaomi") return "/product-images/xiaomi.svg";
-  if (category === "Google Pixel") return "/product-images/pixel.svg";
-  if (category === "OnePlus") return "/product-images/oneplus.svg";
-  return "/product-images/iphone.svg";
+  const photos: Record<string, string> = {
+    "iphone 15 128gb": "https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-15-1.jpg",
+    "iphone 16 pro 256gb": "https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-16-pro-1.jpg",
+    "iphone 15 pro max 256gb": "https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-15-pro-max-1.jpg",
+    "samsung galaxy s24 ultra": "https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-s24-ultra-5g-1.jpg",
+    "samsung galaxy s24": "https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-s24-5g-1.jpg",
+    "samsung galaxy a55 5g": "https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-a55-1.jpg",
+    "xiaomi 14t pro": "https://fdn2.gsmarena.com/vv/pics/xiaomi/xiaomi-14t-pro-1.jpg",
+    "xiaomi 14": "https://fdn2.gsmarena.com/vv/pics/xiaomi/xiaomi-14-1.jpg",
+    "redmi note 13 pro": "https://fdn2.gsmarena.com/vv/pics/xiaomi/xiaomi-redmi-note-13-pro-5g-1.jpg",
+    "google pixel 8": "https://fdn2.gsmarena.com/vv/pics/google/google-pixel-8-1.jpg",
+    "google pixel 8 pro": "https://fdn2.gsmarena.com/vv/pics/google/google-pixel-8-pro-1.jpg",
+    "oneplus 12": "https://fdn2.gsmarena.com/vv/pics/oneplus/oneplus-12-1.jpg",
+    "oneplus nord 4": "https://fdn2.gsmarena.com/vv/pics/oneplus/oneplus-nord-4-1.jpg",
+    "usb-c fast charger 65w": "https://images.unsplash.com/photo-1621962701941-8b3f3a4a9a6c?auto=format&fit=crop&w=900&q=80",
+    "magsafe wireless charger": "https://images.unsplash.com/photo-1618577608401-623b2a65a868?auto=format&fit=crop&w=900&q=80",
+    "wireless earbuds pro": "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?auto=format&fit=crop&w=900&q=80",
+    "clear phone case": "https://images.unsplash.com/photo-1603313011106-4f36696af89d?auto=format&fit=crop&w=900&q=80",
+    "tempered glass protector": "https://images.unsplash.com/photo-1585060544812-6b45742d762f?auto=format&fit=crop&w=900&q=80",
+    "galaxy watch 6": "https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-watch6-1.jpg",
+    "apple watch series 9": "https://fdn2.gsmarena.com/vv/pics/apple/apple-watch-series-9-1.jpg",
+  };
+  if (photos[lower]) return photos[lower];
+  if (category === "Chargers") return photos["usb-c fast charger 65w"];
+  if (category === "Earbuds") return photos["wireless earbuds pro"];
+  if (category === "Cases") return photos["clear phone case"];
+  if (category === "Accessories") return photos["tempered glass protector"];
+  if (category === "Smartwatches") return photos["galaxy watch 6"];
+  if (lower.includes("ultra")) return photos["samsung galaxy s24 ultra"];
+  if (category === "iPhone" && lower.includes("pro")) return photos["iphone 16 pro 256gb"];
+  if (category === "iPhone") return photos["iphone 15 128gb"];
+  if (category === "Samsung Galaxy") return photos["samsung galaxy s24"];
+  if (category === "Xiaomi") return photos["xiaomi 14"];
+  if (category === "Google Pixel") return photos["google pixel 8"];
+  if (category === "OnePlus") return photos["oneplus 12"];
+  return photos["iphone 15 128gb"];
 }

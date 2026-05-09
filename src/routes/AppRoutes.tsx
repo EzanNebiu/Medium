@@ -4,7 +4,6 @@ import { PageShell } from "../components/layout/PageShell";
 import Account from "../pages/Account";
 import Cart from "../pages/Cart";
 import Checkout from "../pages/Checkout";
-import CheckoutSuccess from "../pages/CheckoutSuccess";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Orders from "../pages/Orders";
@@ -32,7 +31,6 @@ export function AppRoutes() {
         <Route path="/register" element={<Register />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/checkout" element={<Checkout />} />
-          <Route path="/checkout/success" element={<CheckoutSuccess />} />
           <Route path="/account" element={<Account />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/orders" element={<Orders />} />

@@ -1,4 +1,4 @@
-import { seedProducts } from "../data/seedProducts";
+import { productImage, seedProducts } from "../data/seedProducts";
 import { supabase, isSupabaseConfigured } from "../lib/supabase";
 import { slugify } from "../lib/utils";
 import type { Product, ProductFilters, ProductSpecs, SortOption } from "../types/product";
@@ -177,8 +177,8 @@ function mapProductFromDb(row: Record<string, unknown>): Product {
     delivery_badge: String(row.delivery_badge ?? "Fast delivery"),
     is_featured: Boolean(row.is_featured),
     is_active: Boolean(row.is_active),
-    main_image_url: String(row.main_image_url ?? ""),
-    gallery_images: (row.gallery_images as string[]) ?? [],
+    main_image_url: String(row.main_image_url || productImage(String(row.name ?? ""), categoryName)),
+    gallery_images: ((row.gallery_images as string[]) ?? []).length ? (row.gallery_images as string[]) : [productImage(String(row.name ?? ""), categoryName)],
     short_description: String(row.short_description ?? ""),
     full_description: String(row.full_description ?? ""),
     imported_from_api: Boolean(row.imported_from_api),

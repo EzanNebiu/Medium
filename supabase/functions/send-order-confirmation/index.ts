@@ -188,10 +188,10 @@ function formatDate(value: string | null) {
 
 function paymentLabel(order: Pick<OrderRow, "payment_method" | "installment_months" | "total">) {
   if (order.payment_method === "cash") return "Pagesë me para në dorë";
-  if (order.payment_method === "electronic-full" || order.payment_method === "bank" || order.payment_method === "card") return "Pagesë elektronike e plotë";
+  if (order.payment_method === "electronic-full" || order.payment_method === "bank" || order.payment_method === "card") return "Pagesë elektronike përmes WhatsApp";
   if (order.payment_method === "monthly") {
     const months = order.installment_months ?? 12;
-    return `Pagesë mujore (${months} muaj, ${money(order.total / months)}/muaj)`;
+    return `Pagesë mujore me marrëveshje (${months} muaj, ${money(order.total / months)}/muaj)`;
   }
   return escapeHtml(order.payment_method);
 }
@@ -207,7 +207,7 @@ function titleFor(emailType: EmailType) {
 }
 
 function introFor(emailType: EmailType) {
-  if (emailType === "paid") return "Pagesa me Stripe u pranua me sukses.";
+  if (emailType === "paid") return "Pagesa u konfirmua me sukses.";
   if (emailType === "shipped") return "Porosia jote është dërguar dhe është rrugës.";
   return "Faleminderit për porosinë.";
 }

@@ -1,4 +1,4 @@
-import { CheckCircle, CreditCard, HandCoins, PackageCheck, Store, Truck } from "lucide-react";
+import { CheckCircle, HandCoins, MessageCircle, PackageCheck, Store, Truck } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { CartSummary } from "../components/cart/CartSummary";
@@ -10,9 +10,9 @@ import { useAuth } from "../hooks/useAuth";
 import { useCart } from "../hooks/useCart";
 import { sqDeliveryMethod, sqPayment } from "../lib/albanian";
 import { formatCurrency } from "../lib/utils";
+import { buildOrderWhatsAppMessage, storeWhatsAppUrl, whatsappUrl, WHATSAPP_DISPLAY_NUMBER } from "../lib/whatsapp";
 import { calculateCartTotals } from "../services/cart";
 import { createOrder } from "../services/orders";
-import { createStripeCheckoutSession } from "../services/payments";
 import { profileToCheckoutDefaults } from "../services/profile";
 import type { CheckoutForm, DeliveryMethod, PaymentMethod } from "../types/order";
 
@@ -26,6 +26,7 @@ export default function Checkout() {
   const [emailSent, setEmailSent] = useState(false);
   const [estimatedDeliveryDate, setEstimatedDeliveryDate] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [whatsAppOrderUrl, setWhatsAppOrderUrl] = useState<string | null>(null);
   const [form, setForm] = useState<CheckoutForm>({
     fullName: "",
     phone: "",
@@ -60,8 +61,15 @@ export default function Checkout() {
         <CheckCircle className="mx-auto h-14 w-14 text-green-600" />
         <h1 className="mt-4 text-3xl font-black">Porosia u konfirmua</h1>
         <p className="mt-2 text-muted-foreground">Numri i porosisë është {orderId}. Dërgesa e vlerësuar: {estimatedDeliveryDate ? new Date(estimatedDeliveryDate).toLocaleDateString() : "së shpejti"}.</p>
-        <p className="mt-2 text-sm text-muted-foreground">{emailSent ? "Emaili i konfirmimit me pagesën, dërgesën dhe garancinë u dërgua." : "Porosia u ruajt. Dërgimi i emailit kërkon konfigurimin e funksionit/provider-it në Supabase."}</p>
-        <Link to="/products"><Button className="mt-6">Vazhdo blerjen</Button></Link>
+        <p className="mt-2 text-sm text-muted-foreground">{emailSent ? "Emaili i konfirmimit me pagesën, dërgesën dhe garancinë u dërgua." : "Porosia u ruajt. Për konfirmim më të shpejtë, dërgo detajet në WhatsApp."}</p>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          {whatsAppOrderUrl && (
+            <a href={whatsAppOrderUrl} target="_blank" rel="noreferrer">
+              <Button><MessageCircle className="h-5 w-5" /> Dërgo në WhatsApp</Button>
+            </a>
+          )}
+          <Link to="/products"><Button variant="outline">Vazhdo blerjen</Button></Link>
+        </div>
       </div>
     );
   }
@@ -89,21 +97,16 @@ export default function Checkout() {
         return;
       }
 
-      if (form.paymentMethod === "electronic-full" || form.paymentMethod === "monthly") {
-        const checkout = await createStripeCheckoutSession(result.orderId, form.paymentMethod, window.location.origin);
-        if (user?.id) await refreshProfile();
-        showToast("Po të dërgojmë te Stripe për pagesë...");
-        window.location.assign(checkout.url);
-        return;
-      }
-
+      const nextWhatsAppUrl = whatsappUrl(buildOrderWhatsAppMessage(result.orderId, form, items, result.estimatedDeliveryDate));
       clearCart();
       if (user?.id) await refreshProfile();
       setEmailSent(result.emailSent);
       setEstimatedDeliveryDate(result.estimatedDeliveryDate);
+      setWhatsAppOrderUrl(nextWhatsAppUrl);
       setOrderId(result.orderId);
+      window.open(nextWhatsAppUrl, "_blank", "noopener,noreferrer");
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Pagesa nuk mund të nisej.", "error");
+      showToast(error instanceof Error ? error.message : "Porosia nuk mund të përgatitej.", "error");
     } finally {
       setProcessingPayment(false);
     }
@@ -113,6 +116,7 @@ export default function Checkout() {
     <div className="container-page py-8">
       <h1 className="text-3xl font-black">Pagesa</h1>
       <p className="mt-2 rounded-md border bg-white p-3 text-sm text-muted-foreground">Për të kryer porosinë duhet të jesh i/e hyrë në llogari. Produktet në shportë ruhen automatikisht gjatë hyrjes ose regjistrimit.</p>
+      <p className="mt-2 rounded-md border border-orange-200 bg-orange-50 p-3 text-sm text-slate-700">Pagesa dhe konfirmimi bëhen përmes WhatsApp në numrin <a className="font-black text-primary" href={storeWhatsAppUrl()} target="_blank" rel="noreferrer">{WHATSAPP_DISPLAY_NUMBER}</a>.</p>
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">
         <form onSubmit={(event) => void submit(event)} className="rounded-lg border bg-white p-5">
           <div className="mb-6 grid gap-2 sm:grid-cols-4">
@@ -133,7 +137,7 @@ export default function Checkout() {
                   <span className="mt-1 block text-sm text-muted-foreground">Rezervo porosinë dhe merre në dyqan pa kosto dërgese.</span>
                 </button>
               </div>
-              {form.deliveryMethod === "pickup" && <div className="rounded-md border border-orange-200 bg-orange-50 p-3 text-sm text-slate-700"><strong>Lokacioni:</strong> Medium Mobil Shop, Prishtinë. Porosia mbahet e rezervuar pas konfirmimit.</div>}
+              {form.deliveryMethod === "pickup" && <div className="rounded-md border border-orange-200 bg-orange-50 p-3 text-sm text-slate-700"><strong>Lokacioni:</strong> Mobil Shop Medium, Prizren. Porosia mbahet e rezervuar pas konfirmimit në WhatsApp.</div>}
               <Input required={form.deliveryMethod === "delivery"} placeholder={form.deliveryMethod === "delivery" ? "Qyteti" : "Qyteti (opsionale)"} value={form.city} onChange={(e) => update("city", e.target.value)} />
               <Input required={form.deliveryMethod === "delivery"} placeholder={form.deliveryMethod === "delivery" ? "Adresa" : "Adresa (opsionale)"} value={form.address} onChange={(e) => update("address", e.target.value)} />
               <Input placeholder="Shënime për porosinë" value={form.deliveryNotes} onChange={(e) => update("deliveryNotes", e.target.value)} />
@@ -148,14 +152,14 @@ export default function Checkout() {
                   <span className="mt-1 block text-sm text-muted-foreground">{form.deliveryMethod === "pickup" ? "Paguaj kur e merr në dyqan." : "Paguaj kur pranon produktin."}</span>
                 </button>
                 <button type="button" onClick={() => choosePayment("electronic-full")} className={`rounded-lg border p-4 text-left transition hover:border-primary ${form.paymentMethod === "electronic-full" ? "border-primary bg-orange-50 ring-2 ring-orange-100" : "bg-white"}`}>
-                  <CreditCard className="h-6 w-6 text-primary" />
-                  <strong className="mt-3 block">Pagesë me Stripe</strong>
-                  <span className="mt-1 block text-sm text-muted-foreground">Paguaj shumën e plotë online me kartë përmes Stripe Checkout.</span>
+                  <MessageCircle className="h-6 w-6 text-primary" />
+                  <strong className="mt-3 block">Pagesë elektronike</strong>
+                  <span className="mt-1 block text-sm text-muted-foreground">Dërgo porosinë në WhatsApp dhe merr udhëzimet për pagesë.</span>
                 </button>
                 <button type="button" onClick={() => choosePayment("monthly")} className={`rounded-lg border p-4 text-left transition hover:border-primary ${form.paymentMethod === "monthly" ? "border-primary bg-orange-50 ring-2 ring-orange-100" : "bg-white"}`}>
                   <PackageCheck className="h-6 w-6 text-primary" />
-                  <strong className="mt-3 block">Pagesë mujore Stripe</strong>
-                  <span className="mt-1 block text-sm text-muted-foreground">Nis planin mujor me Stripe Subscription.</span>
+                  <strong className="mt-3 block">Pagesë mujore</strong>
+                  <span className="mt-1 block text-sm text-muted-foreground">Kërko plan mujor në WhatsApp dhe konfirmo kushtet me dyqanin.</span>
                 </button>
               </div>
               {form.paymentMethod === "monthly" && (
@@ -166,7 +170,7 @@ export default function Checkout() {
                     <option value="12">12 muaj</option>
                     <option value="24">24 muaj</option>
                   </Select>
-                  <p className="text-sm text-muted-foreground">Rreth <strong className="text-slate-900">{formatCurrency(monthlyAmount)}</strong> në muaj për {form.installmentMonths} muaj, pa përfshirë verifikimet e financimit.</p>
+                  <p className="text-sm text-muted-foreground">Rreth <strong className="text-slate-900">{formatCurrency(monthlyAmount)}</strong> në muaj për {form.installmentMonths} muaj. Kushtet finale konfirmohen në WhatsApp.</p>
                 </div>
               )}
             </div>
@@ -183,7 +187,7 @@ export default function Checkout() {
           <div className="mt-6 flex justify-between">
             <Button type="button" variant="outline" disabled={step === 0 || processingPayment} onClick={() => setStep((value) => value - 1)}>Mbrapa</Button>
             <Button type="submit" disabled={processingPayment}>
-              {processingPayment ? "Po përgatitet..." : step === steps.length - 1 && form.paymentMethod !== "cash" ? "Vazhdo në Stripe" : step === steps.length - 1 ? "Porosit" : "Vazhdo"}
+              {processingPayment ? "Po përgatitet..." : step === steps.length - 1 ? "Porosit në WhatsApp" : "Vazhdo"}
             </Button>
           </div>
         </form>
