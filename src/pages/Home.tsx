@@ -51,6 +51,7 @@ const categoryVisuals: Record<string, { Icon: IconComponent; label: string; clas
 export default function Home() {
   const [products, setProducts] = useState<Product[]>(seedProducts);
   const [content, setContent] = useState<HomepageContent>(defaultHomepageContent);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     void Promise.all([getProducts(), getHomepageContent()]).then(([nextProducts, nextContent]) => {
@@ -59,11 +60,27 @@ export default function Home() {
     });
   }, []);
 
-  const heroProduct = useMemo(() => products.find((product) => product.id === content.heroProductId) ?? products[1] ?? products[0] ?? seedProducts[0], [content.heroProductId, products]);
+  const heroProducts = useMemo(() => {
+    const featured = products.filter((product) => product.is_featured).slice(0, 5);
+    return featured.length >= 3 ? featured : products.slice(0, 5);
+  }, [products]);
+
+  const heroProduct = useMemo(() => heroProducts[currentSlide] ?? heroProducts[0] ?? seedProducts[0], [heroProducts, currentSlide]);
   const featured = useMemo(() => pickProducts(products, content.featuredProductIds, products.filter((product) => product.is_featured).slice(0, 4)), [content.featuredProductIds, products]);
   const arrivals = useMemo(() => pickProducts(products, content.newArrivalProductIds, products.slice(4, 8)), [content.newArrivalProductIds, products]);
   const dealSlides = useMemo(() => content.dealBanners.filter((deal) => deal.active).sort((a, b) => a.sort_order - b.sort_order), [content.dealBanners]);
   const services = useMemo(() => content.services.filter((service) => service.active).sort((a, b) => a.sort_order - b.sort_order), [content.services]);
+
+  // Auto-rotate carousel
+  useEffect(() => {
+    if (heroProducts.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroProducts.length);
+    }, 5000); // Change every 5 seconds
+    return () => clearInterval(interval);
+  }, [heroProducts.length]);
+
+  const goToSlide = (index: number) => setCurrentSlide(index);
 
   return (
     <div>
@@ -88,15 +105,21 @@ export default function Home() {
           </div>
           <div className="relative min-h-[250px] overflow-hidden sm:min-h-[360px]">
             <div className="absolute inset-x-10 bottom-0 h-28 rounded-[50%] bg-primary/25 blur-3xl" />
-            {content.heroAdvertImage ? (
-              <ProductImage 
-                className="relative mx-auto h-[270px] w-full max-w-[620px] rounded-lg object-cover drop-shadow-2xl sm:h-[360px] md:h-[420px]" 
-                src={content.heroAdvertImage} 
-                alt="Reklama" 
-                seed="hero-advert" 
-              />
-            ) : (
-              <ProductImage className="relative mx-auto h-[270px] w-full max-w-[620px] bg-transparent object-contain drop-shadow-2xl sm:h-[360px] md:h-[420px]" src={heroProduct.main_image_url} alt={heroProduct.name} seed={heroProduct.name} />
+            <ProductImage priority className="relative mx-auto h-[270px] w-full max-w-[620px] bg-transparent object-contain drop-shadow-2xl sm:h-[360px] md:h-[420px]" src={heroProduct.main_image_url} alt={heroProduct.name} seed={heroProduct.name} />
+            
+            {heroProducts.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
+                {heroProducts.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => goToSlide(index)}
+                    className={`h-2 rounded-full transition-all ${
+                      index === currentSlide ? "w-8 bg-primary" : "w-2 bg-white/40 hover:bg-white/60"
+                    }`}
+                    aria-label={`Go to slide ${index + 1}`}
+                  />
+                ))}
+              </div>
             )}
           </div>
         </div>
