@@ -88,27 +88,19 @@ export default function Home() {
           </div>
           <div className="relative min-h-[250px] overflow-hidden sm:min-h-[360px]">
             <div className="absolute inset-x-10 bottom-0 h-28 rounded-[50%] bg-primary/25 blur-3xl" />
-            <ProductImage className="relative mx-auto h-[270px] w-full max-w-[620px] bg-transparent object-contain drop-shadow-2xl sm:h-[360px] md:h-[420px]" src={heroProduct.main_image_url} alt={heroProduct.name} seed={heroProduct.name} />
+            {content.heroAdvertImage ? (
+              <ProductImage 
+                className="relative mx-auto h-[270px] w-full max-w-[620px] rounded-lg object-cover drop-shadow-2xl sm:h-[360px] md:h-[420px]" 
+                src={content.heroAdvertImage} 
+                alt="Reklama" 
+                seed="hero-advert" 
+              />
+            ) : (
+              <ProductImage className="relative mx-auto h-[270px] w-full max-w-[620px] bg-transparent object-contain drop-shadow-2xl sm:h-[360px] md:h-[420px]" src={heroProduct.main_image_url} alt={heroProduct.name} seed={heroProduct.name} />
+            )}
           </div>
         </div>
       </section>
-
-      {/*<section className="grid md:grid-cols-2">*/}
-      {/*  {promoProducts.map((product, index) => (*/}
-      {/*    <Link key={product.id} to={`/products/${product.slug}`} className={`group grid min-h-[280px] overflow-hidden ${index === 1 || index === 2 ? "bg-zinc-100" : index === 3 ? "bg-zinc-900 text-white" : "bg-white"}`}>*/}
-      {/*      <div className="grid items-center gap-6 p-8 md:grid-cols-2 lg:p-12">*/}
-      {/*        <ProductImage className="h-56 w-full bg-transparent object-contain transition duration-300 group-hover:scale-105" src={product.main_image_url} alt={product.name} seed={product.name} />*/}
-      {/*        <div>*/}
-      {/*          <h2 className="text-3xl font-light leading-tight md:text-4xl">*/}
-      {/*            {product.brand} <span className="font-black">{product.name.replace(product.brand, "").trim()}</span>*/}
-      {/*          </h2>*/}
-      {/*          <p className={`mt-3 text-sm leading-6 ${index === 3 ? "text-zinc-300" : "text-muted-foreground"}`}>{product.short_description}</p>*/}
-      {/*          <Button className={index === 3 ? "mt-5 border-white bg-transparent text-white hover:bg-white hover:text-black" : "mt-5"} variant={index === 3 ? "outline" : "primary"}>{index === 3 ? "Shiko ofertën" : "Bli tani"}</Button>*/}
-      {/*        </div>*/}
-      {/*      </div>*/}
-      {/*    </Link>*/}
-      {/*  ))}*/}
-      {/*</section>*/}
 
       <section className="container-page grid gap-3 py-8 md:grid-cols-5">
         {trust.map(([label, Icon]) => (

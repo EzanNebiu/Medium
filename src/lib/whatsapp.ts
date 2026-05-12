@@ -7,12 +7,13 @@ import { sqDeliveryMethod, sqPayment } from "./albanian";
 export const WHATSAPP_PHONE_NUMBER = "38349684500";
 export const WHATSAPP_DISPLAY_NUMBER = "+383 49 684 500";
 
-export function whatsappUrl(message: string) {
-  return `https://wa.me/${WHATSAPP_PHONE_NUMBER}?text=${encodeURIComponent(message)}`;
+export function whatsappUrl(message: string, phoneNumber?: string) {
+  const phone = phoneNumber || WHATSAPP_PHONE_NUMBER;
+  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }
 
-export function storeWhatsAppUrl(message = "Përshëndetje, dua më shumë informata për ofertat e Medium Mobil Shop.") {
-  return whatsappUrl(message);
+export function storeWhatsAppUrl(message = "Përshëndetje, dua më shumë informata për ofertat e Medium Mobil Shop.", phoneNumber?: string) {
+  return whatsappUrl(message, phoneNumber);
 }
 
 export function buildOrderWhatsAppMessage(

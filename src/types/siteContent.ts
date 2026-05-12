@@ -27,6 +27,7 @@ export type HomepageContent = {
   heroHighlight: string;
   heroText: string;
   heroProductId: string;
+  heroAdvertImage: string;
   featuredProductIds: string[];
   newArrivalProductIds: string[];
   services: SiteService[];

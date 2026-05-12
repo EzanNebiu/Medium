@@ -17,6 +17,7 @@ import AdminHomepage from "../pages/admin/AdminHomepage";
 import AdminNewProduct from "../pages/admin/AdminNewProduct";
 import AdminOrders from "../pages/admin/AdminOrders";
 import AdminProducts from "../pages/admin/AdminProducts";
+import AdminReviews from "../pages/admin/AdminReviews";
 import { AdminRoute } from "./AdminRoute";
 import { ProtectedRoute } from "./ProtectedRoute";
 
@@ -44,6 +45,7 @@ export function AppRoutes() {
             <Route path="products/:id/edit" element={<AdminEditProduct />} />
             <Route path="homepage" element={<AdminHomepage />} />
             <Route path="orders" element={<AdminOrders />} />
+            <Route path="reviews" element={<AdminReviews />} />
           </Route>
         </Route>
         <Route path="*" element={<div className="container-page py-16"><h1 className="text-3xl font-black">Faqja nuk u gjet</h1></div>} />

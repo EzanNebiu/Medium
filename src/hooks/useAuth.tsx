@@ -10,7 +10,7 @@ type AuthContextValue = {
   loading: boolean;
   refreshProfile: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName: string, phone: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 };
 
@@ -60,9 +60,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error };
   };
 
-  const signUp = async (email: string, password: string, fullName: string) => {
+  const signUp = async (email: string, password: string, fullName: string, phone: string) => {
     if (!isSupabaseConfigured) return { error: new Error("Së pari konfiguro variablat e Supabase.") };
-    const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName } } });
+    const { data, error } = await supabase.auth.signUp({ 
+      email, 
+      password, 
+      options: { data: { full_name: fullName, phone } } 
+    });
+    
+    // Update profile with phone after signup
+    if (!error && data.user) {
+      await supabase.from("profiles").update({ phone }).eq("id", data.user.id);
+    }
+    
     return { error };
   };
 

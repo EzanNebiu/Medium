@@ -60,6 +60,17 @@ export default function AdminHomepage() {
     }
   };
 
+  const uploadHeroAdvert = async (file?: File) => {
+    if (!file) return;
+    try {
+      const imageUrl = await uploadProductImage(file, `hero-advert-${Date.now()}`);
+      setField("heroAdvertImage", imageUrl);
+      showToast("Foto e reklamës u ngarkua");
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Ngarkimi i fotos dështoi", "error");
+    }
+  };
+
   const save = async () => {
     setSaving(true);
     const { error } = await saveHomepageContent(content);
@@ -98,6 +109,26 @@ export default function AdminHomepage() {
         <Field label="Përshkrimi në hero">
           <textarea className="min-h-24 w-full rounded-md border p-3 text-sm" value={content.heroText} onChange={(e) => setField("heroText", e.target.value)} />
         </Field>
+        <div className="space-y-3 rounded-lg border bg-orange-50/60 p-4">
+          <h3 className="text-sm font-black uppercase text-primary">Foto e reklamës në hero</h3>
+          <p className="text-sm text-muted-foreground">Ngarko një foto reklamuese që shfaqet në hero section (opsionale).</p>
+          {content.heroAdvertImage && (
+            <ProductImage 
+              className="aspect-video w-full max-w-md rounded-md object-cover" 
+              src={content.heroAdvertImage} 
+              alt="Reklama e hero" 
+              seed="hero-advert" 
+            />
+          )}
+          <div className="grid gap-3 md:grid-cols-2">
+            <Field label="URL e fotos së reklamës">
+              <Input value={content.heroAdvertImage} onChange={(e) => setField("heroAdvertImage", e.target.value)} placeholder="https://.../reklama.webp" />
+            </Field>
+            <Field label="Ngarko foto të reklamës">
+              <Input type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => void uploadHeroAdvert(e.target.files?.[0])} />
+            </Field>
+          </div>
+        </div>
       </Card>
 
       <Card className="space-y-5 p-5">

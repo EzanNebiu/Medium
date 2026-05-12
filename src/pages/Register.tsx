@@ -13,11 +13,12 @@ export default function Register() {
   const from = typeof location.state === "object" && location.state && "from" in location.state ? String(location.state.from) : "/account";
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    const { error } = await signUp(email, password, fullName);
+    const { error } = await signUp(email, password, fullName, phone);
     if (error) showToast(error.message, "error");
     else {
       showToast("Llogaria u krijua. Kontrollo emailin nëse konfirmimi është aktiv.");
@@ -32,6 +33,7 @@ export default function Register() {
         <form className="mt-5 space-y-4" onSubmit={(event) => void submit(event)}>
           <Input required placeholder="Emri dhe mbiemri" value={fullName} onChange={(e) => setFullName(e.target.value)} />
           <Input required type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <Input required type="tel" placeholder="Numri i telefonit" value={phone} onChange={(e) => setPhone(e.target.value)} />
           <Input required type="password" placeholder="Fjalëkalimi" value={password} onChange={(e) => setPassword(e.target.value)} />
           <Button className="w-full">Krijo llogari</Button>
         </form>

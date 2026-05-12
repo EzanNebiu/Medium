@@ -11,6 +11,7 @@ export const defaultHomepageContent: HomepageContent = {
   heroHighlight: "Premium",
   heroText: "Modele flagship, aksesorë origjinalë dhe porosi e shpejtë përmes WhatsApp në Medium Mobil Shop Prizren.",
   heroProductId: seedProducts[1]?.id ?? "",
+  heroAdvertImage: "",
   featuredProductIds: seedProducts.filter((product) => product.is_featured).slice(0, 4).map((product) => product.id),
   newArrivalProductIds: seedProducts.slice(4, 8).map((product) => product.id),
   services: [
@@ -95,6 +96,7 @@ function normalizeHomepageContent(value: unknown): HomepageContent {
     heroHighlight: stringValue(input.heroHighlight, defaultHomepageContent.heroHighlight),
     heroText: stringValue(input.heroText, defaultHomepageContent.heroText),
     heroProductId: stringValue(input.heroProductId, defaultHomepageContent.heroProductId),
+    heroAdvertImage: stringValue(input.heroAdvertImage, defaultHomepageContent.heroAdvertImage),
     featuredProductIds: stringArray(input.featuredProductIds, defaultHomepageContent.featuredProductIds),
     newArrivalProductIds: stringArray(input.newArrivalProductIds, defaultHomepageContent.newArrivalProductIds),
     services: services.sort((a, b) => a.sort_order - b.sort_order),

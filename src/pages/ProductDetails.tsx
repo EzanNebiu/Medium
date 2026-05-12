@@ -6,32 +6,45 @@ import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { ProductImage } from "../components/ui/ProductImage";
 import { Select } from "../components/ui/select";
+import { showToast } from "../components/ui/toast";
 import { seedProducts } from "../data/seedProducts";
+import { useAuth } from "../hooks/useAuth";
 import { useCart } from "../hooks/useCart";
 import { useWishlist } from "../hooks/useWishlist";
 import { formatCurrency } from "../lib/utils";
 import { getProductById } from "../services/products";
+import { createReview, getProductReviews } from "../services/reviews";
 import type { Product } from "../types/product";
-import { sqDelivery, translateToAlbanian } from "../lib/albanian";
+import type { Review } from "../types/review";
+import { sqCondition, sqDelivery, translateToAlbanian } from "../lib/albanian";
 
 export default function ProductDetails() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [product, setProduct] = useState<Product | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [activeImage, setActiveImage] = useState("");
   const [color, setColor] = useState("");
   const [storage, setStorage] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
   const { addToCart } = useCart();
   const { toggle } = useWishlist();
 
   useEffect(() => {
     let active = true;
     setLoading(true);
-    void getProductById(id).then((item) => {
+    void Promise.all([
+      getProductById(id),
+      getProductReviews(id)
+    ]).then(([item, reviewData]) => {
       if (!active) return;
       setProduct(item);
+      setReviews(reviewData);
       setActiveImage(item?.main_image_url ?? "");
       setColor(item?.colors[0] ?? "");
       setStorage(item?.storage_options[0] ?? "");
@@ -39,12 +52,39 @@ export default function ProductDetails() {
     }).catch(() => {
       if (!active) return;
       setProduct(null);
+      setReviews([]);
       setLoading(false);
     });
     return () => {
       active = false;
     };
   }, [id]);
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) {
+      showToast("Duhet të jesh i kyçur për të lënë vlerësim", "error");
+      navigate("/login", { state: { from: `/products/${id}` } });
+      return;
+    }
+
+    setSubmittingReview(true);
+    const { error } = await createReview(id, rating, comment);
+    setSubmittingReview(false);
+
+    if (error) {
+      showToast("Vlerësimi nuk u ruajt", "error");
+      return;
+    }
+
+    showToast("Vlerësimi u shtua me sukses!");
+    setComment("");
+    setRating(5);
+    
+    // Reload reviews
+    const reviewData = await getProductReviews(id);
+    setReviews(reviewData);
+  };
 
   const similar = useMemo(() => seedProducts.filter((item) => item.brand === product?.brand && item.id !== product?.id).slice(0, 4), [product]);
 
@@ -107,7 +147,20 @@ export default function ProductDetails() {
             <div className="mt-3 flex flex-wrap gap-2">
               <Badge className="bg-green-50 text-green-700">{product.stock_quantity > 0 ? "Në stok" : "Nuk ka stok"}</Badge>
               <Badge className="bg-orange-50 text-primary">{sqDelivery(product.delivery_badge)}</Badge>
-              <Badge>{product.warranty_months} muaj garanci</Badge>
+              {product.condition && (
+                <Badge className={`${
+                  product.condition === "new" ? "bg-green-50 text-green-700" :
+                  product.condition === "open-box" ? "bg-blue-50 text-blue-700" :
+                  "bg-purple-50 text-purple-700"
+                }`}>
+                  {sqCondition(product.condition)}
+                </Badge>
+              )}
+              {product.warranty_months > 0 ? (
+                <Badge>{product.warranty_months} muj garanci</Badge>
+              ) : (
+                <Badge className="bg-red-50 text-red-700">Pa garanci</Badge>
+              )}
             </div>
           </div>
           <div className="flex flex-wrap items-end gap-3">
@@ -122,7 +175,7 @@ export default function ProductDetails() {
               ["Procesori", specs.processor, Cpu],
               ["Bateria", specs.battery, Battery],
               ["Dërgesa", sqDelivery(product.delivery_badge), Truck],
-              ["Garancia", `${product.warranty_months} muaj`, Wrench],
+              ["Garancia", product.warranty_months > 0 ? `${product.warranty_months} muj` : "Pa garanci", Wrench],
               ["Stoku", product.stock_quantity > 0 ? "Në stok" : "Nuk ka stok", ShoppingBag],
             ].map(([label, value, Icon]) => (
               <div key={String(label)} className="rounded-lg bg-zinc-100 p-4">
@@ -160,8 +213,87 @@ export default function ProductDetails() {
         </div>
       </section>
       <section className="mt-10 rounded-lg bg-white p-8">
-        <h2 className="text-xl font-black">Vlerësimet</h2>
-        <p className="mt-2 text-muted-foreground">Klientët vlerësojnë dërgesën e shpejtë, paketimin e mbyllur dhe menaxhimin e thjeshtë të garancisë.</p>
+        <h2 className="text-xl font-black">Vlerësimet ({reviews.length})</h2>
+        
+        {user ? (
+          <form onSubmit={(e) => void handleSubmitReview(e)} className="mt-6 space-y-4 rounded-lg border bg-zinc-50 p-5">
+            <h3 className="font-bold">Lë një vlerësim</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold">Vlerësimi:</span>
+              <div className="flex gap-1">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setRating(i + 1)}
+                    className="transition hover:scale-110"
+                  >
+                    <Star
+                      className={`h-6 w-6 ${i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+            <textarea
+              required
+              className="min-h-24 w-full rounded-md border p-3 text-sm"
+              placeholder="Shkruaj mendimin tënd për këtë produkt..."
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+            />
+            <Button type="submit" disabled={submittingReview}>
+              {submittingReview ? "Po ruhet..." : "Dërgo vlerësimin"}
+            </Button>
+          </form>
+        ) : (
+          <div className="mt-4 rounded-lg border bg-zinc-50 p-5">
+            <p className="text-sm text-muted-foreground">
+              <Link to="/login" state={{ from: `/products/${id}` }} className="font-bold text-primary hover:underline">
+                Kyçu
+              </Link>
+              {" "}ose{" "}
+              <Link to="/register" state={{ from: `/products/${id}` }} className="font-bold text-primary hover:underline">
+                regjistrohu
+              </Link>
+              {" "}për të lënë një vlerësim.
+            </p>
+          </div>
+        )}
+
+        <div className="mt-6 space-y-4">
+          {reviews.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Ky produkt nuk ka vlerësime ende. Ji i pari që e vlerëson!</p>
+          ) : (
+            reviews.map((review) => (
+              <div key={review.id} className="rounded-lg border bg-white p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-3">
+                      <span className="font-bold">{review.user_name}</span>
+                      <div className="flex">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`h-3.5 w-3.5 ${i < review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-sm leading-relaxed">{review.comment}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(review.created_at).toLocaleDateString("sq-AL", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </section>
       <section className="mt-10">
         <h2 className="mb-5 text-2xl font-black">Produkte të ngjashme</h2>
