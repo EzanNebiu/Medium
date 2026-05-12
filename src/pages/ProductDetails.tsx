@@ -127,16 +127,16 @@ export default function ProductDetails() {
         <span>/</span>
         <span className="font-semibold text-black">{product.name}</span>
       </div>
-      <section className="grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+      <section className="grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
         <div className="grid min-w-0 gap-3 md:grid-cols-[96px_1fr]">
-          <div className="flex gap-3 overflow-auto md:flex-col">
+          <div className="flex gap-3 overflow-x-auto overflow-y-hidden md:flex-col md:overflow-x-hidden md:overflow-y-auto">
             {[product.main_image_url, ...product.gallery_images].map((image) => (
-              <button key={image} className={`aspect-square w-20 rounded-md border bg-white p-1 transition ${activeImage === image ? "border-black" : "border-black/10 opacity-60 hover:opacity-100"}`} onClick={() => setActiveImage(image)}>
+              <button key={image} className={`aspect-square w-20 shrink-0 rounded-md border bg-white p-1 transition ${activeImage === image ? "border-black" : "border-black/10 opacity-60 hover:opacity-100"}`} onClick={() => setActiveImage(image)}>
                 <ProductImage className="h-full w-full rounded bg-transparent object-contain" src={image} alt={product.name} seed={product.name} />
               </button>
             ))}
           </div>
-          <div className="aspect-square min-h-0 rounded-lg bg-white p-4 sm:p-8">
+          <div className="aspect-square min-h-0 overflow-hidden rounded-lg bg-white p-2 sm:p-4">
             <ProductImage className="h-full w-full bg-transparent object-contain" src={activeImage} alt={product.name} seed={product.name} />
           </div>
         </div>
@@ -186,18 +186,22 @@ export default function ProductDetails() {
             ))}
           </div>
           <p className="text-muted-foreground">{product.full_description}</p>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-3 gap-3">
             <label className="text-sm font-bold">Ngjyra<Select className="mt-2" value={color} onChange={(e) => setColor(e.target.value)}>{product.colors.map((item) => <option key={item}>{translateToAlbanian(item)}</option>)}</Select></label>
             <label className="text-sm font-bold">Memoria<Select className="mt-2" value={storage} onChange={(e) => setStorage(e.target.value)}>{product.storage_options.map((item) => <option key={item}>{item}</option>)}</Select></label>
+            <label className="text-sm font-bold">Sasia
+              <div className="mt-2 flex h-11 items-center justify-center rounded-md border bg-white">
+                <Button variant="ghost" size="icon" onClick={() => setQuantity((value) => Math.max(1, value - 1))}><Minus className="h-4 w-4" /></Button>
+                <span className="flex-1 text-center font-bold">{quantity}</span>
+                <Button variant="ghost" size="icon" onClick={() => setQuantity((value) => value + 1)}><Plus className="h-4 w-4" /></Button>
+              </div>
+            </label>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[auto_1fr_1fr_1fr]">
-            <div className="flex h-11 items-center rounded-md border bg-white">
-              <Button variant="ghost" size="icon" onClick={() => setQuantity((value) => Math.max(1, value - 1))}><Minus className="h-4 w-4" /></Button>
-              <span className="w-10 text-center font-bold">{quantity}</span>
-              <Button variant="ghost" size="icon" onClick={() => setQuantity((value) => value + 1)}><Plus className="h-4 w-4" /></Button>
+          <div className="space-y-3">
+            <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+              <Button className="min-w-0 w-full" onClick={() => addToCart(product, quantity, color, storage)}><ShoppingCart className="h-4 w-4" /> Shto në shportë</Button>
+              <Button className="min-w-0 w-full" variant="outline" onClick={() => void toggle(product)}><Heart className="h-4 w-4" /> Lista e dëshirave</Button>
             </div>
-            <Button className="w-full" onClick={() => addToCart(product, quantity, color, storage)}><ShoppingCart className="h-4 w-4" /> Shto në shportë</Button>
-            <Button className="w-full" variant="outline" onClick={() => void toggle(product)}><Heart className="h-4 w-4" /> Lista e dëshirave</Button>
             <Button className="w-full" variant="secondary" onClick={() => { addToCart(product, quantity, color, storage); navigate("/checkout"); }}><ShoppingBag className="h-4 w-4" /> Bli tani</Button>
           </div>
         </div>
