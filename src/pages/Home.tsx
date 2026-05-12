@@ -61,11 +61,27 @@ export default function Home() {
   }, []);
 
   const heroProducts = useMemo(() => {
-    const featured = products.filter((product) => product.is_featured).slice(0, 5);
-    return featured.length >= 3 ? featured : products.slice(0, 5);
+    // Whitelist of allowed hero product image URLs
+    const allowedHeroImages = [
+      "https://qvsjjcrwrzhjtljredzq.supabase.co/storage/v1/object/public/product-images/android-tablet/f934d6c4-83cf-4e10-9b25-1ef3009fd2a7.png",
+      "https://qvsjjcrwrzhjtljredzq.supabase.co/storage/v1/object/public/product-images/galaxy-a57-5g/f9f5d4a8-332f-4f53-bf4e-ab2d4eb59436.png",
+      "https://qvsjjcrwrzhjtljredzq.supabase.co/storage/v1/object/public/product-images/dji-osmo/176fcb66-c65c-4637-bebb-460fa94f077f.png",
+    ];
+    
+    const filtered = products.filter((product) => 
+      allowedHeroImages.includes(product.main_image_url) || 
+      product.name.toLowerCase().includes("iphone air")
+    );
+    
+    // If no whitelisted products found, exclude gsmarena images from fallback
+    if (filtered.length === 0) {
+      return products.filter((product) => product.main_image_url && !product.main_image_url.includes("gsmarena.com")).slice(0, 5);
+    }
+    
+    return filtered;
   }, [products]);
 
-  const heroProduct = useMemo(() => heroProducts[currentSlide] ?? heroProducts[0] ?? seedProducts[0], [heroProducts, currentSlide]);
+  const heroProduct = useMemo(() => heroProducts[currentSlide] ?? heroProducts[0] ?? products[0] ?? seedProducts[1], [heroProducts, currentSlide, products]);
   const featured = useMemo(() => pickProducts(products, content.featuredProductIds, products.filter((product) => product.is_featured).slice(0, 4)), [content.featuredProductIds, products]);
   const arrivals = useMemo(() => pickProducts(products, content.newArrivalProductIds, products.slice(4, 8)), [content.newArrivalProductIds, products]);
   const dealSlides = useMemo(() => content.dealBanners.filter((deal) => deal.active).sort((a, b) => a.sort_order - b.sort_order), [content.dealBanners]);
@@ -105,7 +121,7 @@ export default function Home() {
           </div>
           <div className="relative min-h-[250px] overflow-hidden sm:min-h-[360px]">
             <div className="absolute inset-x-10 bottom-0 h-28 rounded-[50%] bg-primary/25 blur-3xl" />
-            <ProductImage priority className="relative mx-auto h-[270px] w-full max-w-[620px] bg-transparent object-contain drop-shadow-2xl sm:h-[360px] md:h-[420px]" src={heroProduct.main_image_url} alt={heroProduct.name} seed={heroProduct.name} />
+            {heroProduct && <ProductImage priority className="relative mx-auto h-[270px] w-full max-w-[620px] bg-transparent object-contain drop-shadow-2xl sm:h-[360px] md:h-[420px]" src={heroProduct.main_image_url} alt={heroProduct.name} seed={heroProduct.name} />}
             
             {heroProducts.length > 1 && (
               <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
@@ -150,7 +166,7 @@ export default function Home() {
             return (
               <Card key={deal.title} className="min-w-[280px] snap-start p-5 sm:min-w-[370px]">
                 <div className="flex h-full flex-col">
-                  {deal.image_url && <ProductImage className="mb-4 aspect-[16/9] w-full rounded-md object-cover" src={deal.image_url} alt={deal.title} seed={deal.title} />}
+                  {deal.image_url && <ProductImage className="mb-4 h-48 w-full rounded-md object-cover" src={deal.image_url} alt={deal.title} seed={deal.title} />}
                   <span className="grid h-12 w-12 place-items-center rounded-full bg-orange-50 text-primary">
                     <Icon className="h-6 w-6" />
                   </span>
