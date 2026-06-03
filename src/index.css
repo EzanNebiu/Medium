@@ -2,22 +2,134 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Publica Sans';
+  src: url('/fonts/PublicaSans-ExtraLight.otf') format('opentype');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Publica Sans';
+  src: url('/fonts/PublicaSans-ExtraLightItalic.otf') format('opentype');
+  font-weight: 200;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Publica Sans';
+  src: url('/fonts/PublicaSans-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Publica Sans';
+  src: url('/fonts/PublicaSans-LightItalic.otf') format('opentype');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Publica Sans';
+  src: url('/fonts/ZPublicaSans.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Publica Sans';
+  src: url('/fonts/PublicaSans-Italic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Publica Sans';
+  src: url('/fonts/PublicaSans-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Publica Sans';
+  src: url('/fonts/PublicaSans-MediumItalic.otf') format('opentype');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Publica Sans';
+  src: url('/fonts/PublicaSans-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Publica Sans';
+  src: url('/fonts/PublicaSans-BoldItalic.otf') format('opentype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Publica Sans';
+  src: url('/fonts/PublicaSans-ExtraBold.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Publica Sans';
+  src: url('/fonts/PublicaSans-ExtraBoldItalic.otf') format('opentype');
+  font-weight: 800;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Publica Sans';
+  src: url('/fonts/PublicaSans-Black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Publica Sans';
+  src: url('/fonts/PublicaSans-BlackItalic.otf') format('opentype');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+
 :root {
   --background: 0 0% 98%;
-  --foreground: 222 47% 11%;
+  --foreground: 0 0% 0%;
   --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
-  --primary: 24 95% 53%;
+  --card-foreground: 0 0% 0%;
+  --primary: 24 100% 50%;
   --primary-foreground: 0 0% 100%;
   --muted: 0 0% 94%;
-  --muted-foreground: 215 16% 47%;
-  --accent: 24 55% 96%;
-  --accent-foreground: 222 47% 11%;
+  --muted-foreground: 0 0% 40%;
+  --accent: 24 100% 97%;
+  --accent-foreground: 0 0% 0%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
-  --ring: 24 95% 53%;
+  --border: 0 0% 85%;
+  --input: 0 0% 85%;
+  --ring: 24 100% 50%;
 }
 
 * {
@@ -29,7 +141,7 @@ body {
   min-width: 320px;
   background: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: 'Publica Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 a {

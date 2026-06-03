@@ -126,10 +126,10 @@ function renderEmail(order: OrderRow, emailType: EmailType) {
     .join("");
 
   return `
-    <div style="font-family:Arial,sans-serif;background:#fff7ed;padding:28px;color:#111827;">
+    <div style="font-family:'Publica Sans',Arial,sans-serif;background:#fff7ed;padding:28px;color:#000000;">
       <div style="max-width:680px;margin:auto;background:white;border:1px solid #fed7aa;border-radius:14px;overflow:hidden;">
-        <div style="background:#111827;color:white;padding:24px;">
-          <h1 style="margin:0;font-size:26px;">Medium <span style="color:#f97316;">Mobil Shop</span></h1>
+        <div style="background:#000000;color:white;padding:24px;">
+          <h1 style="margin:0;font-size:26px;">Medium <span style="color:#FF6600;">Mobil Shop</span></h1>
           <p style="margin:8px 0 0;">${escapeHtml(titleFor(emailType))} ${shortId(order.id)}</p>
         </div>
         <div style="padding:24px;">

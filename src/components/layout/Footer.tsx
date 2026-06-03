@@ -76,7 +76,19 @@ export function Footer() {
           </div>
 
           <div className="mt-10 border-t border-white/10 pt-6 text-center text-sm text-zinc-500">
-            © {new Date().getFullYear()} Medium Mobil Shop. Zhvilluar nga {contact.name}.
+            <p>© {new Date().getFullYear()} Medium Mobil Shop.</p>
+            <p className="mt-2">
+              Made by{" "}
+              <a 
+                href="https://ezannebija.dev/" 
+                target="_blank" 
+                rel="noreferrer"
+                className="text-primary hover:underline font-medium"
+              >
+                Ezan Nebija
+              </a>
+              {" "}and Dionis Kryeziu
+            </p>
           </div>
         </div>
       </footer>
